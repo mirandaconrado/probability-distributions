@@ -3,8 +3,6 @@
 
 #include "distribution.hpp"
 
-#include <boost/random/discrete_distribution.hpp>
-
 namespace ProbabilityDistributions {
   template <class T>
   class Discrete: public Distribution<T> {
@@ -36,8 +34,6 @@ namespace ProbabilityDistributions {
       void check_data_and_weight(MA::ConstArray<T> const& data,
           MA::ConstArray<T> const& weight) const;
       void normalize();
-
-      typedef boost::random::discrete_distribution<unsigned int, T> DD;
 
       std::vector<T> p_;
   };

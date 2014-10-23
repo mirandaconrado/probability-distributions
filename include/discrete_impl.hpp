@@ -6,6 +6,7 @@
 #include "const_slice.hpp"
 #include "slice.hpp"
 
+#include <boost/random/discrete_distribution.hpp>
 #include <cmath>
 
 namespace ProbabilityDistributions {
@@ -30,7 +31,8 @@ namespace ProbabilityDistributions {
     size[1] = p_.size();
     samples.resize(size);
 
-    DD dist(p_.begin(), p_.end());
+    boost::random::discrete_distribution<unsigned int, T> dist(p_.begin(),
+        p_.end());
 
     MA::Slice<T> slice(samples, 0);
     for (size_t j = 0; j < slice.total_left_size(); j++) {
