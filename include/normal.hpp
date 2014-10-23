@@ -12,7 +12,8 @@ namespace ProbabilityDistributions {
       void fix_mean(bool fixed = true) { fixed_mean_ = fixed; }
       void fix_sigma(bool fixed = true) { fixed_sigma_ = fixed; }
       void set_mean(T mean) { mean_ = mean; }
-      void set_sigma(T sigma) { sigma_ = sigma, inv_sigma2_ = 1/(2*sigma*sigma); }
+      void set_sigma(T sigma) { assert(sigma > 0); sigma_ = sigma;
+        inv_sigma2_ = 1/(2*sigma*sigma); }
       T get_mean() const { return mean_; }
       T get_sigma() const { return sigma_; }
 

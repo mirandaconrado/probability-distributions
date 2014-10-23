@@ -13,11 +13,9 @@ namespace ProbabilityDistributions {
   template <class T>
   Normal<T>::Normal(T mean, T sigma):
     fixed_mean_(false),
-    fixed_sigma_(false),
-    mean_(mean),
-    sigma_(sigma),
-    inv_sigma2_(1/(2*sigma*sigma)) {
-      assert(sigma > 0);
+    fixed_sigma_(false) {
+      set_mean(mean);
+      set_sigma(sigma);
     }
 
   template <class T>
