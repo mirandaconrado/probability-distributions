@@ -12,6 +12,8 @@
 namespace ProbabilityDistributions {
   template <class T>
   Normal<T>::Normal(T mean, T sigma):
+    fixed_mean_(false),
+    fixed_sigma_(false),
     mean_(mean),
     sigma_(sigma),
     inv_sigma2_(1/(2*sigma*sigma)) {
@@ -74,8 +76,10 @@ namespace ProbabilityDistributions {
       sum_2 += w*sample(0)*sample(0);
     }
 
-    set_mean(sum_1/sum_0);
-    set_sigma(sqrt((sum_2 - 2*mean_*sum_1 + mean_*mean_*sum_0)/sum_0));
+    if (!fixed_mean_)
+      set_mean(sum_1/sum_0);
+    if (!fixed_sigma_)
+      set_sigma(sqrt((sum_2 - 2*mean_*sum_1 + mean_*mean_*sum_0)/sum_0));
   }
 
   template <class T>
