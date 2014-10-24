@@ -42,7 +42,7 @@ namespace ProbabilityDistributions {
     check_data_and_weight(data, weight);
 
     T ll = 0;
-    T sigma_likelihood = log(2*M_PI*sigma_*sigma_)/2;
+    T sigma_likelihood = std::log(2*M_PI*sigma_*sigma_)/2;
 
     MA::ConstSlice<T> slice(data, 0);
     for (size_t j = 0; j < slice.total_left_size(); j++) {
