@@ -1,6 +1,7 @@
 add_executable(run_tests.bin EXCLUDE_FROM_ALL
   discrete.cpp
   normal.cpp
+  laplace.cpp
 )
 
 target_link_libraries(run_tests.bin gtest gtest_main
