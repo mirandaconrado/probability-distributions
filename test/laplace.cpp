@@ -7,7 +7,7 @@
 using namespace MultidimensionalArray;
 using namespace ProbabilityDistributions;
 
-TEST(LaplacelTest, Likelihood) {
+TEST(LaplaceTest, Likelihood) {
   boost::random::mt19937 rng;
   const unsigned int n_samples = 100;
   Laplace<double> dist(0, 1);
