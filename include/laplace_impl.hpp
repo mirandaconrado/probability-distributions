@@ -70,27 +70,19 @@ namespace ProbabilityDistributions {
     check_data_and_weight(data, weight);
 
     if (!fixed_mu_) {
-      std::vector<T> sorted_data(data.size()[0]);
-      std::vector<T> sorted_weights(data.size()[0]);
-      std::vector<T> sorted_indexes(data.size()[0]);
+      std::vector<size_t> sorted_indexes(data.size()[0]);
       std::generate_n(sorted_indexes.begin(), data.size()[0],
           []() { static size_t counter = 0; return counter++; });
-
 
       if (!consider_sorted_) {
         std::sort(sorted_indexes.begin(), sorted_indexes.end(),
             [&](size_t i, size_t j) { return data(i,0) <  data(j,0); });
       }
 
-      for (size_t j = 0; j < data.size()[0]; j++) {
-        sorted_data[j] = data(sorted_indexes[j],0);
-        sorted_weights[j] = weight(sorted_indexes[j]);
-      }
-
       T total_sum = 0;
       std::vector<T> p_n(data.size()[0]);
       for (size_t j = 0; j < data.size()[0]; j++) {
-        T w = sorted_weights[j];
+        T w = weight(sorted_indexes[j]);
         total_sum += w;
         p_n[j] = total_sum - w/2;
       }
@@ -106,8 +98,9 @@ namespace ProbabilityDistributions {
         for (size_t j = 1; j < data.size()[0]-1; j++)
           if (p_n[j] <= 0.5) {
             T scale = (0.5 - p_n[j])/(p_n[j+1] - p_n[j]);
-            T offset = sorted_data[j];
-            set_mu(offset + scale * (sorted_data[j+1] - sorted_data[j]));
+            T offset = data(sorted_indexes[j], 0);
+            set_mu(offset + scale * (data(sorted_indexes[j+1],0) -
+                  data(sorted_indexes[j],0)));
           }
       }
     }
