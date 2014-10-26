@@ -1,3 +1,6 @@
 [submodule "lib/multidimensional-array"]
 	path = lib/multidimensional-array
 	url = git@github.com:mirandaconrado/multidimensional-array.git
+[submodule "lib/compile-utils"]
+	path = lib/compile-utils
+	url = git@github.com:mirandaconrado/compile-utils.git
