@@ -10,21 +10,21 @@
 #include <cmath>
 
 namespace ProbabilityDistributions {
-  template <class T>
-  Discrete<T>::Discrete(unsigned int K):
+  template <class D, class W, class T>
+  Discrete<D,W,T>::Discrete(unsigned int K):
     p_(K, 1./K) {
       assert(K > 0);
     }
 
-  template <class T>
-  Discrete<T>::Discrete(std::vector<T> const& p):
+  template <class D, class W, class T>
+  Discrete<D,W,T>::Discrete(std::vector<T> const& p):
     p_(p) {
       assert(p.size() > 0);
     }
 
-  template <class T>
+  template <class D, class W, class T>
   template <class RNG>
-  void Discrete<T>::sample(MA::Array<T>& samples, size_t n_samples,
+  void Discrete<D,W,T>::sample(MA::Array<D>& samples, size_t n_samples,
       RNG& rng) const {
     MA::Size::SizeType size(2);
     size[0] = n_samples;
@@ -48,9 +48,9 @@ namespace ProbabilityDistributions {
     }
   }
 
-  template <class T>
-  T Discrete<T>::log_likelihood(MA::ConstArray<T> const& data,
-          MA::ConstArray<T> const& weight) const {
+  template <class D, class W, class T>
+  T Discrete<D,W,T>::log_likelihood(MA::ConstArray<D> const& data,
+          MA::ConstArray<W> const& weight) const {
     check_data_and_weight(data, weight);
 
     T ll = 0;
@@ -72,9 +72,9 @@ namespace ProbabilityDistributions {
     return ll;
   }
 
-  template <class T>
-  void Discrete<T>::MLE(MA::ConstArray<T> const& data,
-      MA::ConstArray<T> const& weight, std::vector<size_t> const& indexes) {
+  template <class D, class W, class T>
+  void Discrete<D,W,T>::MLE(MA::ConstArray<D> const& data,
+      MA::ConstArray<W> const& weight, std::vector<size_t> const& indexes) {
     check_data_and_weight(data, weight);
 
     for (unsigned int i = 0; i < p_.size(); i++)
@@ -91,9 +91,9 @@ namespace ProbabilityDistributions {
     normalize();
   }
 
-  template <class T>
-  void Discrete<T>::sample_to_index(MA::Array<unsigned int>& indexes,
-          MA::ConstArray<T> const& samples) const {
+  template <class D, class W, class T>
+  void Discrete<D,W,T>::sample_to_index(MA::Array<unsigned int>& indexes,
+          MA::ConstArray<D> const& samples) const {
     assert(samples.size().size() == 2);
     assert(samples.size()[0] > 0);
     assert(samples.size()[1] == p_.size());
@@ -117,8 +117,8 @@ namespace ProbabilityDistributions {
     }
   }
 
-  template <class T>
-  void Discrete<T>::index_to_sample(MA::Array<T>& samples,
+  template <class D, class W, class T>
+  void Discrete<D,W,T>::index_to_sample(MA::Array<D>& samples,
           MA::ConstArray<unsigned int> const& indexes) const {
     assert(indexes.size().size() == 2);
     assert(indexes.size()[0] > 0);
@@ -144,9 +144,9 @@ namespace ProbabilityDistributions {
     }
   }
 
-  template <class T>
-  void Discrete<T>::check_data_and_weight(MA::ConstArray<T> const& data,
-          MA::ConstArray<T> const& weight) const {
+  template <class D, class W, class T>
+  void Discrete<D,W,T>::check_data_and_weight(MA::ConstArray<D> const& data,
+          MA::ConstArray<W> const& weight) const {
     assert(data.size().size() == 2);
     assert(data.size()[0] > 0);
     assert(data.size()[1] == p_.size());
@@ -154,8 +154,8 @@ namespace ProbabilityDistributions {
     assert(weight.size()[0] == data.size()[0]);
   }
 
-  template <class T>
-  void Discrete<T>::normalize() {
+  template <class D, class W, class T>
+  void Discrete<D,W,T>::normalize() {
     T sum = 0;
     for (unsigned int i = 0; i < p_.size(); i++)
       sum += p_[i];

@@ -4,8 +4,8 @@
 #include "distribution.hpp"
 
 namespace ProbabilityDistributions {
-  template <class T>
-  class Discrete: public Distribution<T> {
+  template <class D, class W = D, class T = W>
+  class Discrete: public Distribution<D,W,T> {
     public:
       Discrete(unsigned int K);
       Discrete(std::vector<T> const& p);
@@ -15,25 +15,25 @@ namespace ProbabilityDistributions {
       unsigned int get_number_of_classes() const { return p_.size(); }
 
       template <class RNG>
-      void sample(MA::Array<T>& samples, size_t n_samples, RNG& rng) const;
+      void sample(MA::Array<D>& samples, size_t n_samples, RNG& rng) const;
 
-      using Distribution<T>::log_likelihood;
-      T log_likelihood(MA::ConstArray<T> const& data,
-          MA::ConstArray<T> const& weight) const;
+      using Distribution<D,W,T>::log_likelihood;
+      T log_likelihood(MA::ConstArray<D> const& data,
+          MA::ConstArray<W> const& weight) const;
 
-      using Distribution<T>::MLE;
-      void MLE(MA::ConstArray<T> const& data, MA::ConstArray<T> const& weight,
+      using Distribution<D,W,T>::MLE;
+      void MLE(MA::ConstArray<D> const& data, MA::ConstArray<W> const& weight,
           std::vector<size_t> const& indexes = std::vector<size_t>());
 
       void sample_to_index(MA::Array<unsigned int>& indexes,
-          MA::ConstArray<T> const& samples) const;
+          MA::ConstArray<D> const& samples) const;
 
-      void index_to_sample(MA::Array<T>& samples,
+      void index_to_sample(MA::Array<D>& samples,
           MA::ConstArray<unsigned int> const& indexes) const;
 
     private:
-      void check_data_and_weight(MA::ConstArray<T> const& data,
-          MA::ConstArray<T> const& weight) const;
+      void check_data_and_weight(MA::ConstArray<D> const& data,
+          MA::ConstArray<W> const& weight) const;
       void normalize();
 
       std::vector<T> p_;

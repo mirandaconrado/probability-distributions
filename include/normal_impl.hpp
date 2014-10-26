@@ -10,17 +10,17 @@
 #include <cmath>
 
 namespace ProbabilityDistributions {
-  template <class T>
-  Normal<T>::Normal(T mean, T sigma):
+  template <class D, class W, class T>
+  Normal<D,W,T>::Normal(T mean, T sigma):
     fixed_mean_(false),
     fixed_sigma_(false) {
       set_mean(mean);
       set_sigma(sigma);
     }
 
-  template <class T>
+  template <class D, class W, class T>
   template <class RNG>
-  void Normal<T>::sample(MA::Array<T>& samples, size_t n_samples, RNG& rng)
+  void Normal<D,W,T>::sample(MA::Array<D>& samples, size_t n_samples, RNG& rng)
   const {
     MA::Size::SizeType size(2);
     size[0] = n_samples;
@@ -36,9 +36,9 @@ namespace ProbabilityDistributions {
     }
   }
 
-  template <class T>
-  T Normal<T>::log_likelihood(MA::ConstArray<T> const& data,
-      MA::ConstArray<T> const& weight) const {
+  template <class D, class W, class T>
+  T Normal<D,W,T>::log_likelihood(MA::ConstArray<D> const& data,
+      MA::ConstArray<W> const& weight) const {
     check_data_and_weight(data, weight);
 
     T ll = 0;
@@ -59,9 +59,9 @@ namespace ProbabilityDistributions {
     return ll;
   }
 
-  template <class T>
-  void Normal<T>::MLE(MA::ConstArray<T> const& data,
-      MA::ConstArray<T> const& weight, std::vector<size_t> const& indexes) {
+  template <class D, class W, class T>
+  void Normal<D,W,T>::MLE(MA::ConstArray<D> const& data,
+      MA::ConstArray<W> const& weight, std::vector<size_t> const& indexes) {
     check_data_and_weight(data, weight);
 
     T sum_0 = 0, sum_1 = 0, sum_2 = 0;
@@ -80,9 +80,9 @@ namespace ProbabilityDistributions {
       set_sigma(sqrt((sum_2 - 2*mean_*sum_1 + mean_*mean_*sum_0)/sum_0));
   }
 
-  template <class T>
-  void Normal<T>::check_data_and_weight(MA::ConstArray<T> const& data,
-      MA::ConstArray<T> const& weight) const {
+  template <class D, class W, class T>
+  void Normal<D,W,T>::check_data_and_weight(MA::ConstArray<D> const& data,
+      MA::ConstArray<W> const& weight) const {
     assert(data.size().size() == 2);
     assert(data.size()[0] > 0);
     assert(data.size()[1] == 1);

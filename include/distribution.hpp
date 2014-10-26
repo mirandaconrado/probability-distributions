@@ -7,24 +7,28 @@
 namespace ProbabilityDistributions {
   namespace MA = MultidimensionalArray;
 
-  template <class T>
+  template <class D, class W = D, class T = W>
   class Distribution {
     public:
-      virtual T log_likelihood(MA::ConstArray<T> const& data) const;
+      typedef D data_type;
+      typedef W weight_type;
+      typedef T float_type;
 
-      virtual T log_likelihood(MA::ConstArray<T> const& data,
-          MA::ConstArray<T> const& weight) const = 0;
+      virtual T log_likelihood(MA::ConstArray<D> const& data) const;
 
-      virtual void MLE(MA::ConstArray<T> const& data,
+      virtual T log_likelihood(MA::ConstArray<D> const& data,
+          MA::ConstArray<W> const& weight) const = 0;
+
+      virtual void MLE(MA::ConstArray<D> const& data,
           std::vector<size_t> const& indexes = std::vector<size_t>());
 
-      virtual void MLE(MA::ConstArray<T> const& data,
-          MA::ConstArray<T> const& weight,
+      virtual void MLE(MA::ConstArray<D> const& data,
+          MA::ConstArray<W> const& weight,
           std::vector<size_t> const& indexes = std::vector<size_t>()) = 0;
 
       virtual bool require_sorted() const { return false; }
 
-      static std::vector<size_t> sort_data(MA::ConstArray<T> const& data);
+      static std::vector<size_t> sort_data(MA::ConstArray<D> const& data);
   };
 };
 

@@ -4,8 +4,8 @@
 #include "distribution.hpp"
 
 namespace ProbabilityDistributions {
-  template <class T>
-  class Normal: public Distribution<T> {
+  template <class D, class W = D, class T = W>
+  class Normal: public Distribution<D,W,T> {
     public:
       Normal(T mean, T sigma);
 
@@ -18,19 +18,19 @@ namespace ProbabilityDistributions {
       T get_sigma() const { return sigma_; }
 
       template <class RNG>
-      void sample(MA::Array<T>& samples, size_t n_samples, RNG& rng) const;
+      void sample(MA::Array<D>& samples, size_t n_samples, RNG& rng) const;
 
-      using Distribution<T>::log_likelihood;
-      T log_likelihood(MA::ConstArray<T> const& data,
-          MA::ConstArray<T> const& weight) const;
+      using Distribution<D,W,T>::log_likelihood;
+      T log_likelihood(MA::ConstArray<D> const& data,
+          MA::ConstArray<W> const& weight) const;
 
-      using Distribution<T>::MLE;
-      void MLE(MA::ConstArray<T> const& data, MA::ConstArray<T> const& weight,
+      using Distribution<D,W,T>::MLE;
+      void MLE(MA::ConstArray<D> const& data, MA::ConstArray<W> const& weight,
           std::vector<size_t> const& indexes = std::vector<size_t>());
 
     private:
-      void check_data_and_weight(MA::ConstArray<T> const& data,
-          MA::ConstArray<T> const& weight) const;
+      void check_data_and_weight(MA::ConstArray<D> const& data,
+          MA::ConstArray<W> const& weight) const;
 
       bool fixed_mean_, fixed_sigma_;
       T mean_, sigma_, inv_sigma2_;

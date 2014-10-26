@@ -11,17 +11,17 @@
 #include <cmath>
 
 namespace ProbabilityDistributions {
-  template <class T>
-  Laplace<T>::Laplace(T mu, T b):
+  template <class D, class W, class T>
+  Laplace<D,W,T>::Laplace(T mu, T b):
     fixed_mu_(false),
     fixed_b_(false) {
       set_mu(mu);
       set_b(b);
     }
 
-  template <class T>
+  template <class D, class W, class T>
   template <class RNG>
-  void Laplace<T>::sample(MA::Array<T>& samples, size_t n_samples, RNG& rng)
+  void Laplace<D,W,T>::sample(MA::Array<D>& samples, size_t n_samples, RNG& rng)
   const {
     MA::Size::SizeType size(2);
     size[0] = n_samples;
@@ -41,9 +41,9 @@ namespace ProbabilityDistributions {
     }
   }
 
-  template <class T>
-  T Laplace<T>::log_likelihood(MA::ConstArray<T> const& data,
-      MA::ConstArray<T> const& weight) const {
+  template <class D, class W, class T>
+  T Laplace<D,W,T>::log_likelihood(MA::ConstArray<D> const& data,
+      MA::ConstArray<W> const& weight) const {
     check_data_and_weight(data, weight);
 
     T ll = 0;
@@ -62,9 +62,9 @@ namespace ProbabilityDistributions {
     return ll;
   }
 
-  template <class T>
-  void Laplace<T>::MLE(MA::ConstArray<T> const& data,
-      MA::ConstArray<T> const& weight, std::vector<size_t> const& indexes) {
+  template <class D, class W, class T>
+  void Laplace<D,W,T>::MLE(MA::ConstArray<D> const& data,
+      MA::ConstArray<W> const& weight, std::vector<size_t> const& indexes) {
     check_data_and_weight(data, weight);
     assert(data.size()[0] == indexes.size());
 
@@ -109,9 +109,9 @@ namespace ProbabilityDistributions {
     }
   }
 
-  template <class T>
-  void Laplace<T>::check_data_and_weight(MA::ConstArray<T> const& data,
-      MA::ConstArray<T> const& weight) const {
+  template <class D, class W, class T>
+  void Laplace<D,W,T>::check_data_and_weight(MA::ConstArray<D> const& data,
+      MA::ConstArray<W> const& weight) const {
     assert(data.size().size() == 2);
     assert(data.size()[0] > 0);
     assert(data.size()[1] == 1);

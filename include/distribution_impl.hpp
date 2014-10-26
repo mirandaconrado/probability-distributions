@@ -6,26 +6,27 @@
 #include <algorithm>
 
 namespace ProbabilityDistributions {
-  template <class T>
-  T Distribution<T>::log_likelihood(MA::ConstArray<T> const& data) const {
+  template <class D, class W, class T>
+  T Distribution<D,W,T>::log_likelihood(MA::ConstArray<D> const& data) const {
     assert(data.size().size() > 1);
     assert(data.size()[0] > 0);
-    std::vector<T> weights(data.size()[0], 1);
-    return log_likelihood(data, MA::ConstArray<T>({data.size()[0]},
+    std::vector<W> weights(data.size()[0], 1);
+    return log_likelihood(data, MA::ConstArray<W>({data.size()[0]},
           &weights[0]));
   }
 
-  template <class T>
-  void Distribution<T>::MLE(MA::ConstArray<T> const& data,
+  template <class D, class W, class T>
+  void Distribution<D,W,T>::MLE(MA::ConstArray<D> const& data,
       std::vector<size_t> const& indexes) {
     assert(data.size().size() > 1);
     assert(data.size()[0] > 0);
-    std::vector<T> weights(data.size()[0], 1);
-    MLE(data, MA::ConstArray<T>({data.size()[0]}, &weights[0]), indexes);
+    std::vector<W> weights(data.size()[0], 1);
+    MLE(data, MA::ConstArray<W>({data.size()[0]}, &weights[0]), indexes);
   }
 
-  template <class T>
-  std::vector<size_t> Distribution<T>::sort_data(MA::ConstArray<T> const& data) {
+  template <class D, class W, class T>
+  std::vector<size_t> Distribution<D,W,T>::sort_data(
+      MA::ConstArray<D> const& data) {
     assert(data.size().size() == 2);
     assert(data.size()[0] > 0);
     assert(data.size()[1] == 1);
