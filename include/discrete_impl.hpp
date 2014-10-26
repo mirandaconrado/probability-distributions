@@ -74,7 +74,7 @@ namespace ProbabilityDistributions {
 
   template <class T>
   void Discrete<T>::MLE(MA::ConstArray<T> const& data,
-          MA::ConstArray<T> const& weight) {
+      MA::ConstArray<T> const& weight, std::vector<size_t> const& indexes) {
     check_data_and_weight(data, weight);
 
     for (unsigned int i = 0; i < p_.size(); i++)

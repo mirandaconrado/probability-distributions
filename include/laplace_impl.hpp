@@ -6,7 +6,6 @@
 #include "const_slice.hpp"
 #include "slice.hpp"
 
-#include <algorithm>
 #include <boost/random/uniform_smallint.hpp>
 #include <boost/random/exponential_distribution.hpp>
 #include <cmath>
@@ -15,8 +14,7 @@ namespace ProbabilityDistributions {
   template <class T>
   Laplace<T>::Laplace(T mu, T b):
     fixed_mu_(false),
-    fixed_b_(false),
-    consider_sorted_(false) {
+    fixed_b_(false) {
       set_mu(mu);
       set_b(b);
     }
@@ -66,23 +64,15 @@ namespace ProbabilityDistributions {
 
   template <class T>
   void Laplace<T>::MLE(MA::ConstArray<T> const& data,
-      MA::ConstArray<T> const& weight) {
+      MA::ConstArray<T> const& weight, std::vector<size_t> const& indexes) {
     check_data_and_weight(data, weight);
+    assert(data.size()[0] == indexes.size());
 
     if (!fixed_mu_) {
-      std::vector<size_t> sorted_indexes(data.size()[0]);
-      std::generate_n(sorted_indexes.begin(), data.size()[0],
-          []() { static size_t counter = 0; return counter++; });
-
-      if (!consider_sorted_) {
-        std::sort(sorted_indexes.begin(), sorted_indexes.end(),
-            [&](size_t i, size_t j) { return data(i,0) <  data(j,0); });
-      }
-
       T total_sum = 0;
       std::vector<T> p_n(data.size()[0]);
       for (size_t j = 0; j < data.size()[0]; j++) {
-        T w = weight(sorted_indexes[j]);
+        T w = weight(indexes[j]);
         total_sum += w;
         p_n[j] = total_sum - w/2;
       }
@@ -98,9 +88,9 @@ namespace ProbabilityDistributions {
         for (size_t j = 1; j < data.size()[0]-1; j++)
           if (p_n[j] <= 0.5) {
             T scale = (0.5 - p_n[j])/(p_n[j+1] - p_n[j]);
-            T offset = data(sorted_indexes[j], 0);
-            set_mu(offset + scale * (data(sorted_indexes[j+1],0) -
-                  data(sorted_indexes[j],0)));
+            T offset = data(indexes[j], 0);
+            set_mu(offset + scale * (data(indexes[j+1],0) -
+                  data(indexes[j],0)));
           }
       }
     }

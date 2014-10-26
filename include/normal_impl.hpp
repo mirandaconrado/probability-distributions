@@ -61,7 +61,7 @@ namespace ProbabilityDistributions {
 
   template <class T>
   void Normal<T>::MLE(MA::ConstArray<T> const& data,
-      MA::ConstArray<T> const& weight) {
+      MA::ConstArray<T> const& weight, std::vector<size_t> const& indexes) {
     check_data_and_weight(data, weight);
 
     T sum_0 = 0, sum_1 = 0, sum_2 = 0;

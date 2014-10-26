@@ -14,9 +14,11 @@ TEST(LaplaceTest, Likelihood) {
   Array<double> samples;
   dist.sample(samples, n_samples, rng);
 
+  auto indexes = Distribution<double>::sort_data(samples);
+
   double likelihood1 = dist.log_likelihood(samples);
 
-  dist.MLE(samples);
+  dist.MLE(samples, indexes);
 
   double likelihood2 = dist.log_likelihood(samples);
 

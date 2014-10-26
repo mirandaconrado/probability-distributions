@@ -22,7 +22,8 @@ namespace ProbabilityDistributions {
           MA::ConstArray<T> const& weight) const;
 
       using Distribution<T>::MLE;
-      void MLE(MA::ConstArray<T> const& data, MA::ConstArray<T> const& weight);
+      void MLE(MA::ConstArray<T> const& data, MA::ConstArray<T> const& weight,
+          std::vector<size_t> const& indexes = std::vector<size_t>());
 
       void sample_to_index(MA::Array<unsigned int>& indexes,
           MA::ConstArray<T> const& samples) const;

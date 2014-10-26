@@ -15,10 +15,16 @@ namespace ProbabilityDistributions {
       virtual T log_likelihood(MA::ConstArray<T> const& data,
           MA::ConstArray<T> const& weight) const = 0;
 
-      virtual void MLE(MA::ConstArray<T> const& data);
+      virtual void MLE(MA::ConstArray<T> const& data,
+          std::vector<size_t> const& indexes = std::vector<size_t>());
 
       virtual void MLE(MA::ConstArray<T> const& data,
-          MA::ConstArray<T> const& weight) = 0;
+          MA::ConstArray<T> const& weight,
+          std::vector<size_t> const& indexes = std::vector<size_t>()) = 0;
+
+      virtual bool require_sorted() const { return false; }
+
+      static std::vector<size_t> sort_data(MA::ConstArray<T> const& data);
   };
 };
 

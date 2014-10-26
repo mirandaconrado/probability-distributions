@@ -25,7 +25,8 @@ namespace ProbabilityDistributions {
           MA::ConstArray<T> const& weight) const;
 
       using Distribution<T>::MLE;
-      void MLE(MA::ConstArray<T> const& data, MA::ConstArray<T> const& weight);
+      void MLE(MA::ConstArray<T> const& data, MA::ConstArray<T> const& weight,
+          std::vector<size_t> const& indexes = std::vector<size_t>());
 
     private:
       void check_data_and_weight(MA::ConstArray<T> const& data,
