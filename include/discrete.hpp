@@ -4,15 +4,17 @@
 #include "distribution.hpp"
 
 namespace ProbabilityDistributions {
-  template <class D, class W = D, class T = W>
+  template <unsigned int K, class D, class W = D, class T = W>
   class Discrete: public Distribution<D,W,T> {
     public:
-      Discrete(unsigned int K);
+      static_assert(K > 0, "Can't create distribution without classes.");
+
+      Discrete();
       Discrete(std::vector<T> const& p);
 
-      void set_p(std::vector<T> const& p) { p_ = p; normalize(); }
+      void set_p(std::vector<T> const& p) { assert(p.size() == K); p_ = p; normalize(); }
       std::vector<T> const& get_p() const { return p_; }
-      unsigned int get_number_of_classes() const { return p_.size(); }
+      unsigned int get_number_of_classes() const { return K; }
 
       template <class RNG>
       void sample(MA::Array<D>& samples, size_t n_samples, RNG& rng) const;

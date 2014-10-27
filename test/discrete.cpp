@@ -10,7 +10,7 @@ using namespace ProbabilityDistributions;
 TEST(DiscreteTest, Likelihood) {
   boost::random::mt19937 rng;
   const unsigned int n_samples = 100;
-  Discrete<double> dist(5);
+  Discrete<5, double> dist;
   Array<double> samples;
   dist.sample(samples, n_samples, rng);
 
@@ -35,7 +35,7 @@ TEST(DiscreteTest, Samples) {
   boost::random::mt19937 rng;
   const unsigned int n_samples = 100;
   {
-    Discrete<double> dist(2);
+    Discrete<2, double> dist;
     Array<double> samples;
     dist.sample(samples, n_samples, rng);
     size_t count_0 = 0, count_1 = 0;
@@ -50,7 +50,7 @@ TEST(DiscreteTest, Samples) {
     EXPECT_LT(0, count_1);
   }
   {
-    Discrete<double> dist({0,1});
+    Discrete<2, double> dist({0,1});
     Array<double> samples;
     dist.sample(samples, n_samples, rng);
     size_t count_0 = 0, count_1 = 0;
