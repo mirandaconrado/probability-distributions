@@ -96,19 +96,17 @@ namespace ProbabilityDistributions {
     assert(samples.size()[0] > 0);
     assert(samples.size()[1] == K);
 
-    MA::Size::SizeType size = samples.size();
-    size[1] = 1;
+    MA::Size::SizeType size(1);
+    size[0] = samples.size()[0];
     indexes.resize(size);
 
     MA::ConstSlice<T> samples_slice(samples, 0);
-    MA::Slice<unsigned int> indexes_slice(indexes, 0);
     for (size_t j = 0; j < samples_slice.total_left_size(); j++) {
       MA::ConstArray<T> const& s = samples_slice.get_element(j);
-      MA::Array<unsigned int> idx = indexes_slice.get_element(j);
       size_t i;
       for (i = 0; i < K; i++)
         if (s(i) == 1) {
-          idx(0) = i;
+          indexes(j) = i;
           break;
         }
       assert(i < K);
@@ -118,20 +116,17 @@ namespace ProbabilityDistributions {
   template <unsigned int K, class D, class W, class T>
   void Discrete<K,D,W,T>::index_to_sample(MA::Array<D>& samples,
           MA::ConstArray<unsigned int> const& indexes) const {
-    assert(indexes.size().size() == 2);
+    assert(indexes.size().size() == 1);
     assert(indexes.size()[0] > 0);
-    assert(indexes.size()[1] == 1);
 
     MA::Size::SizeType size = indexes.size();
-    size[1] = K;
+    size.push_back(K);
     samples.resize(size);
 
     MA::Slice<T> samples_slice(samples, 0);
-    MA::ConstSlice<unsigned int> indexes_slice(indexes, 0);
-    for (size_t j = 0; j < indexes_slice.total_left_size(); j++) {
+    for (size_t j = 0; j < samples_slice.total_left_size(); j++) {
       MA::Array<T>& s = samples_slice.get_element(j);
-      MA::ConstArray<unsigned int> const& idx = indexes_slice.get_element(j);
-      unsigned int index = idx(0);
+      unsigned int index = indexes(j);
       assert(index < K);
       for (size_t i = 0; i < K; i++) {
         if (i == index)

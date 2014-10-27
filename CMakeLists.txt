@@ -5,6 +5,7 @@ find_package(GTest REQUIRED)
 
 set(CMAKE_CXX_COMPILER "clang++")
 include_directories(include)
+include_directories(lib/compile-utils/include)
 include_directories(lib/multidimensional-array/include)
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -Werror")

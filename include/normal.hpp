@@ -9,6 +9,8 @@ namespace ProbabilityDistributions {
     public:
       Normal(T mean, T sigma);
 
+      static constexpr unsigned int sample_size = 1;
+
       void fix_mean(bool fixed = true) { fixed_mean_ = fixed; }
       void fix_sigma(bool fixed = true) { fixed_sigma_ = fixed; }
       void set_mean(T mean) { mean_ = mean; }

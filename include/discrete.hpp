@@ -9,6 +9,8 @@ namespace ProbabilityDistributions {
     public:
       static_assert(K > 0, "Can't create distribution without classes.");
 
+      static constexpr unsigned int sample_size = K;
+
       Discrete();
       Discrete(std::vector<T> const& p);
 

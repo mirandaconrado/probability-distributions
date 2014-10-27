@@ -9,6 +9,8 @@ namespace ProbabilityDistributions {
     public:
       Laplace(T mu, T b);
 
+      static constexpr unsigned int sample_size = 1;
+
       void fix_mu(bool fixed = true) { fixed_mu_ = fixed; }
       void fix_b(bool fixed = true) { fixed_b_ = fixed; }
       void set_mu(T mu) { mu_ = mu; }
