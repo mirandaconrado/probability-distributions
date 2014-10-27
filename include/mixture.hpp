@@ -34,6 +34,8 @@ namespace ProbabilityDistributions {
       using Distribution<D,W,T>::log_likelihood;
       T log_likelihood(MA::ConstArray<D> const& data,
           MA::ConstArray<W> const& weight) const;
+      T log_likelihood(MA::ConstArray<D> const& data,
+          std::vector<unsigned int> const& labels) const;
 
       using Distribution<D,W,T>::MLE;
       void MLE(MA::ConstArray<D> const& data, MA::ConstArray<W> const& weight,
@@ -43,6 +45,9 @@ namespace ProbabilityDistributions {
       void check_data_and_weight(MA::ConstArray<D> const& data,
           MA::ConstArray<W> const& weight) const;
 
+      template <size_t... S>
+      void create_component_pointers(CompileUtils::sequence<S...>);
+
       template <class RNG, size_t... S>
       void sample_components(MA::Array<D>& sample, size_t component_id,
           RNG& rng, CompileUtils::sequence<S...>) const;
@@ -51,12 +56,18 @@ namespace ProbabilityDistributions {
       bool sample_component(MA::Array<D>& sample, size_t component_id,
           RNG& rng) const;
 
+      void build_expectation(MA::Array<W>& expected_weight,
+          MA::ConstArray<W> const& weight, MA::ConstArray<D> const& data) const;
+
+      MA::Array<W> transpose(MA::Array<W> const& original) const;
+
       typedef typename CompileUtils::clean_tuple<Dists...>::type tuple_type;
 
       T stop_condition_;
       size_t max_iterations_;
       Discrete<D,W,T> mixture_weights_;
       tuple_type components_;
+      std::vector<Distribution<D,W,T>*> components_pointers_;
   };
 
   template <class D1, class... Dists>
