@@ -17,6 +17,9 @@ namespace ProbabilityDistributions {
 
   template <unsigned int K, class D, class W = D, class T = W, class... Dists>
   class Mixture {
+    private:
+      typedef typename CompileUtils::clean_tuple<Dists...>::type tuple_type;
+
     public:
       static constexpr unsigned int sample_size = K;
 
@@ -27,6 +30,22 @@ namespace ProbabilityDistributions {
 
       void set_max_iterations(size_t it) { max_iterations_ = it; }
       size_t get_max_iterations() const { return max_iterations_; }
+
+      Discrete<D,W,T>& get_mixture_weights() { return mixture_weights_; }
+      Discrete<D,W,T> const& get_mixture_weights() const {
+        return mixture_weights_; }
+
+      template <size_t I>
+      std::tuple_element<I,tuple_type>& get_component() {
+        return std::get<I>(components_); }
+      template <size_t I>
+      std::tuple_element<I,tuple_type> const& get_component() const {
+        return std::get<I>(components_); }
+
+      Distribution<D,W,T>* get_component_pointer(size_t i) {
+        return components_pointers_[i]; }
+      Distribution<D,W,T> const* get_component_pointer(size_t i) const {
+        return components_pointers_[i]; }
 
       template <class RNG>
       void sample(MA::Array<D>& samples, size_t n_samples, RNG& rng) const;
@@ -64,7 +83,6 @@ namespace ProbabilityDistributions {
 
       MA::Array<W> transpose(MA::Array<W> const& original) const;
 
-      typedef typename CompileUtils::clean_tuple<Dists...>::type tuple_type;
 
       T stop_condition_;
       size_t max_iterations_;
