@@ -182,6 +182,16 @@ namespace ProbabilityDistributions {
     if (index_pointer != &indexes)
       delete index_pointer;
   }
+
+  template <unsigned int K, class D, class W, class T, class... Dists>
+  void Mixture<K,D,W,T,Dists...>::check_data_and_weight(
+      MA::ConstArray<D> const& data, MA::ConstArray<W> const& weight) const {
+    assert(data.size().size() == 2);
+    assert(data.size()[0] > 0);
+    assert(data.size()[1] == K);
+    assert(weight.size().size() == 1);
+    assert(weight.size()[0] == data.size()[0]);
+  }
 };
 
 #endif
