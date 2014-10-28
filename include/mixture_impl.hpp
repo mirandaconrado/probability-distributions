@@ -63,9 +63,18 @@ namespace ProbabilityDistributions {
   template <unsigned int K, class D, class W, class T, class... Dists>
   T Mixture<K,D,W,T,Dists...>::log_likelihood(MA::ConstArray<D> const& data,
       MA::ConstArray<W> const& weight) const {
+    check_data_and_weight(data, weight);
+
     MA::Array<W> expected_weight;
     build_expectation(expected_weight, weight, data);
 
+    return internal_log_likelihood(data, expected_weight);
+  }
+
+  template <unsigned int K, class D, class W, class T, class... Dists>
+  T Mixture<K,D,W,T,Dists...>::internal_log_likelihood(
+      MA::ConstArray<D> const& data,
+      MA::ConstArray<W> const& expected_weight) const {
     MA::Slice<W> weight_slice(expected_weight, 0);
 
     T ll = 0;
@@ -75,7 +84,7 @@ namespace ProbabilityDistributions {
 
     MA::Array<W> expected_weight_transp = transpose(expected_weight);
 
-    ll += mixture_weights_(expected_weight_transp);
+    ll += mixture_weights_.log_likelihood(expected_weight_transp);
     return ll;
   }
 
@@ -129,6 +138,49 @@ namespace ProbabilityDistributions {
     }
 
     return ll;
+  }
+
+  template <unsigned int K, class D, class W, class T, class... Dists>
+  void Mixture<K,D,W,T,Dists...>::MLE(MA::ConstArray<D> const& data,
+      MA::ConstArray<W> const& weight, std::vector<size_t> const& indexes) {
+    check_data_and_weight(data, weight);
+
+    std::vector<size_t> const* index_pointer = &indexes;
+
+    for (unsigned int i = 0; i < K; i++)
+      if (components_pointers_[i]->require_sorted() && indexes.size() == 0) {
+        index_pointer = new
+          std::vector<size_t>(Distribution<D,W,T>::sort_data(data));
+        break;
+      }
+
+    MA::Array<W> expected_weight;
+    T ll_old = INFINITY, ll_new = INFINITY;
+    size_t it = 0;
+
+    do {
+      build_expectation(expected_weight, weight, data);
+
+      ll_old = ll_new;
+
+      MA::Slice<W> weight_slice(expected_weight, 0);
+
+      for (unsigned int k = 0; k < K; k++)
+        components_pointers_[k]->MLE(data, weight_slice.get_element(k),
+            *index_pointer);
+
+      MA::Array<W> expected_weight_transp = transpose(expected_weight);
+
+      mixture_weights_.MLE(expected_weight_transp);
+
+      ll_new = internal_log_likelihood(data, expected_weight);
+      assert(ll_new <= ll_old);
+
+      it++;
+    } while(ll_old - ll_new > stop_condition_ && it < max_iterations_);
+
+    if (index_pointer != &indexes)
+      delete index_pointer;
   }
 };
 
