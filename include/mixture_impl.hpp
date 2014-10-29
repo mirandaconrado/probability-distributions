@@ -4,8 +4,8 @@
 #include "mixture.hpp"
 
 namespace ProbabilityDistributions {
-  template <unsigned int K, class D, class W, class T, class... Dists>
-  Mixture<K,D,W,T,Dists...>::Mixture(Dists&&... dists):
+  template <unsigned int SS, class D, class W, class T, class... Dists>
+  Mixture<SS,D,W,T,Dists...>::Mixture(Dists&&... dists):
     stop_condition_(1e-4),
     max_iterations_(1000),
     mixture_weights_(),
@@ -14,21 +14,21 @@ namespace ProbabilityDistributions {
           typename CompileUtils::tuple_sequence_generator<tuple_type>::type());
     }
 
-  template <unsigned int K, class D, class W, class T, class... Dists>
+  template <unsigned int SS, class D, class W, class T, class... Dists>
   template <size_t... S>
-  void Mixture<K,D,W,T,Dists...>::create_component_pointers(
+  void Mixture<SS,D,W,T,Dists...>::create_component_pointers(
       CompileUtils::sequence<S...>) {
     components_pointers_ =
       std::vector<Distribution<D,W,T>*>({&std::get<S>(components_)...});
   }
 
-  template <unsigned int K, class D, class W, class T, class... Dists>
+  template <unsigned int SS, class D, class W, class T, class... Dists>
   template <class RNG>
-  void Mixture<K,D,W,T,Dists...>::sample(MA::Array<D>& samples,
+  void Mixture<SS,D,W,T,Dists...>::sample(MA::Array<D>& samples,
       size_t n_samples, RNG& rng) const {
     MA::Size::SizeType size(2);
     size[0] = n_samples;
-    size[1] = K;
+    size[1] = SS;
     samples.resize(size);
 
     MA::Array<D> components_samples;
@@ -44,17 +44,17 @@ namespace ProbabilityDistributions {
     }
   }
 
-  template <unsigned int K, class D, class W, class T, class... Dists>
+  template <unsigned int SS, class D, class W, class T, class... Dists>
   template <class RNG, size_t... S>
-  void Mixture<K,D,W,T,Dists...>::sample_components(MA::Array<D>& sample,
+  void Mixture<SS,D,W,T,Dists...>::sample_components(MA::Array<D>& sample,
       size_t component_id, RNG& rng, CompileUtils::sequence<S...>) const {
     bool vec[] = {sample_component<S>(sample, component_id, rng)...};
     (void)vec;
   }
 
-  template <unsigned int K, class D, class W, class T, class... Dists>
+  template <unsigned int SS, class D, class W, class T, class... Dists>
   template <size_t I, class RNG>
-  bool Mixture<K,D,W,T,Dists...>::sample_component(MA::Array<D>& sample,
+  bool Mixture<SS,D,W,T,Dists...>::sample_component(MA::Array<D>& sample,
       size_t component_id, RNG& rng) const {
     if (I != component_id)
       return false;
@@ -62,8 +62,8 @@ namespace ProbabilityDistributions {
     return true;
   }
 
-  template <unsigned int K, class D, class W, class T, class... Dists>
-  T Mixture<K,D,W,T,Dists...>::log_likelihood(MA::ConstArray<D> const& data,
+  template <unsigned int SS, class D, class W, class T, class... Dists>
+  T Mixture<SS,D,W,T,Dists...>::log_likelihood(MA::ConstArray<D> const& data,
       MA::ConstArray<W> const& weight) const {
     check_data_and_weight(data, weight);
 
@@ -73,8 +73,8 @@ namespace ProbabilityDistributions {
     return internal_log_likelihood(data, expected_weight);
   }
 
-  template <unsigned int K, class D, class W, class T, class... Dists>
-  T Mixture<K,D,W,T,Dists...>::internal_log_likelihood(
+  template <unsigned int SS, class D, class W, class T, class... Dists>
+  T Mixture<SS,D,W,T,Dists...>::internal_log_likelihood(
       MA::ConstArray<D> const& data,
       MA::ConstArray<W> const& expected_weight) const {
     MA::ConstSlice<W> weight_slice(expected_weight, 0);
@@ -90,8 +90,8 @@ namespace ProbabilityDistributions {
     return ll;
   }
 
-  template <unsigned int K, class D, class W, class T, class... Dists>
-  void Mixture<K,D,W,T,Dists...>::build_expectation(
+  template <unsigned int SS, class D, class W, class T, class... Dists>
+  void Mixture<SS,D,W,T,Dists...>::build_expectation(
       MA::Array<W>& expected_weight, MA::ConstArray<W> const& weight,
       MA::ConstArray<D> const& data) const {
     expected_weight.resize({K, weight.size()[0]});
@@ -110,8 +110,8 @@ namespace ProbabilityDistributions {
     }
   }
 
-  template <unsigned int K, class D, class W, class T, class... Dists>
-  MA::Array<W> Mixture<K,D,W,T,Dists...>::transpose(
+  template <unsigned int SS, class D, class W, class T, class... Dists>
+  MA::Array<W> Mixture<SS,D,W,T,Dists...>::transpose(
       MA::Array<W> const& original) const {
     MA::Array<W> ret({original.size()[1], original.size()[0]});
 
@@ -122,13 +122,13 @@ namespace ProbabilityDistributions {
     return ret;
   }
 
-  template <unsigned int K, class D, class W, class T, class... Dists>
-  T Mixture<K,D,W,T,Dists...>::log_likelihood(MA::ConstArray<D> const& data,
+  template <unsigned int SS, class D, class W, class T, class... Dists>
+  T Mixture<SS,D,W,T,Dists...>::log_likelihood(MA::ConstArray<D> const& data,
       std::vector<unsigned int> const& labels) const {
     assert(labels.size() = data.size()[0]);
     assert(data.size().size() == 2);
     assert(data.size()[0] > 0);
-    assert(data.size()[1] == K);
+    assert(data.size()[1] == SS);
 
     T ll = 0;
 
@@ -142,8 +142,8 @@ namespace ProbabilityDistributions {
     return ll;
   }
 
-  template <unsigned int K, class D, class W, class T, class... Dists>
-  void Mixture<K,D,W,T,Dists...>::MLE(MA::ConstArray<D> const& data,
+  template <unsigned int SS, class D, class W, class T, class... Dists>
+  void Mixture<SS,D,W,T,Dists...>::MLE(MA::ConstArray<D> const& data,
       MA::ConstArray<W> const& weight, std::vector<size_t> const& indexes) {
     check_data_and_weight(data, weight);
 
@@ -185,12 +185,12 @@ namespace ProbabilityDistributions {
       delete index_pointer;
   }
 
-  template <unsigned int K, class D, class W, class T, class... Dists>
-  void Mixture<K,D,W,T,Dists...>::check_data_and_weight(
+  template <unsigned int SS, class D, class W, class T, class... Dists>
+  void Mixture<SS,D,W,T,Dists...>::check_data_and_weight(
       MA::ConstArray<D> const& data, MA::ConstArray<W> const& weight) const {
     assert(data.size().size() == 2);
     assert(data.size()[0] > 0);
-    assert(data.size()[1] == K);
+    assert(data.size()[1] == SS);
     assert(weight.size().size() == 1);
     assert(weight.size()[0] == data.size()[0]);
   }

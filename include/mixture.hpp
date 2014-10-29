@@ -15,13 +15,14 @@
 
 namespace ProbabilityDistributions {
 
-  template <unsigned int K, class D, class W = D, class T = W, class... Dists>
+  template <unsigned int SS, class D, class W = D, class T = W, class... Dists>
   class Mixture: public Distribution<D,W,T> {
     private:
       typedef typename CompileUtils::clean_tuple<Dists...>::type tuple_type;
 
     public:
-      static constexpr unsigned int sample_size = K;
+      static constexpr unsigned int sample_size = SS;
+      static constexpr unsigned int K = sizeof...(Dists);
 
       Mixture(Dists&&... dists);
 
