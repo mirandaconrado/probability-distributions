@@ -1,10 +1,12 @@
 #ifndef __PROBABILITY_DISTRIBUTIONS__MIXTURE_HPP__
 #define __PROBABILITY_DISTRIBUTIONS__MIXTURE_HPP__
 
+#include "discrete.hpp"
 #include "distribution.hpp"
 
 #include "binary_combination.hpp"
 #include "clean_tuple.hpp"
+#include "clean_type.hpp"
 #include "repeated_tuple.hpp"
 #include "sequence.hpp"
 
@@ -12,11 +14,9 @@
 #include <type_traits>
 
 namespace ProbabilityDistributions {
-  template <class D, class W = D, class T = W>
-  class Discrete;
 
   template <unsigned int K, class D, class W = D, class T = W, class... Dists>
-  class Mixture {
+  class Mixture: public Distribution<D,W,T> {
     private:
       typedef typename CompileUtils::clean_tuple<Dists...>::type tuple_type;
 
@@ -31,8 +31,8 @@ namespace ProbabilityDistributions {
       void set_max_iterations(size_t it) { max_iterations_ = it; }
       size_t get_max_iterations() const { return max_iterations_; }
 
-      Discrete<D,W,T>& get_mixture_weights() { return mixture_weights_; }
-      Discrete<D,W,T> const& get_mixture_weights() const {
+      Discrete<K,D,W,T>& get_mixture_weights() { return mixture_weights_; }
+      Discrete<K,D,W,T> const& get_mixture_weights() const {
         return mixture_weights_; }
 
       template <size_t I>
@@ -86,38 +86,50 @@ namespace ProbabilityDistributions {
 
       T stop_condition_;
       size_t max_iterations_;
-      Discrete<D,W,T> mixture_weights_;
+      Discrete<K,D,W,T> mixture_weights_;
       tuple_type components_;
       std::vector<Distribution<D,W,T>*> components_pointers_;
   };
 
   template <class D1, class... Dists>
-  Mixture<D1::sample_size, typename D1::data_type, typename D1::weight_type,
-    typename D1::float_type, D1, Dists...>
+  Mixture<CompileUtils::clean_type<D1>::type::sample_size,
+          typename CompileUtils::clean_type<D1>::type::data_type,
+          typename CompileUtils::clean_type<D1>::type::weight_type,
+          typename CompileUtils::clean_type<D1>::type::float_type, D1, Dists...>
   make_mixture(D1&& dist1, Dists&&... dists) {
     const unsigned int n_dists = 1 + sizeof...(Dists);
 
     static_assert(std::is_same<
-        std::tuple<typename D1::data_type, typename Dists::data_type...>,
-        CompileUtils::repeated_tuple<n_dists, typename D1::data_type>
+        std::tuple<typename CompileUtils::clean_type<D1>::type::data_type,
+                   typename CompileUtils::clean_type<Dists>::type::data_type...>,
+        typename CompileUtils::repeated_tuple<n_dists,
+          typename CompileUtils::clean_type<D1>::type::data_type>::type
         >::value, "All distributions must have the same data type");
     static_assert(std::is_same<
-        std::tuple<typename D1::weight_type, typename Dists::weight_type...>,
-        CompileUtils::repeated_tuple<n_dists, typename D1::weight_type>
+        std::tuple<typename CompileUtils::clean_type<D1>::type::weight_type,
+                   typename CompileUtils::clean_type<Dists>::type::weight_type...>,
+        typename CompileUtils::repeated_tuple<n_dists,
+          typename CompileUtils::clean_type<D1>::type::weight_type>::type
         >::value, "All distributions must have the same weight type");
     static_assert(std::is_same<
-        std::tuple<typename D1::float_type, typename Dists::float_type...>,
-        CompileUtils::repeated_tuple<n_dists, typename D1::float_type>
+        std::tuple<typename CompileUtils::clean_type<D1>::type::float_type,
+                   typename CompileUtils::clean_type<Dists>::type::float_type...>,
+        typename CompileUtils::repeated_tuple<n_dists,
+          typename CompileUtils::clean_type<D1>::type::float_type>::type
         >::value, "All distributions must have the same float type");
-    static_assert(CompileUtils::and_<D1::sample_size ==
-        Dists::sample_size...>::value,
+    static_assert(
+        CompileUtils::and_<CompileUtils::clean_type<D1>::type::sample_size ==
+        CompileUtils::clean_type<Dists>::type::sample_size...>::value,
         "All distributions must have the same sample size");
 
-    return Mixture<D1::sample_size, typename D1::data_type, typename
-      D1::weight_type, typename D1::float_type, D1,
-      Dists...>(std::forward<D1>(dist1),
-          std::forward<Dists>(dists)...);
+    return Mixture<CompileUtils::clean_type<D1>::type::sample_size,
+           typename CompileUtils::clean_type<D1>::type::data_type,
+           typename CompileUtils::clean_type<D1>::type::weight_type,
+           typename CompileUtils::clean_type<D1>::type::float_type, D1,
+           Dists...>(std::forward<D1>(dist1), std::forward<Dists>(dists)...);
   }
 };
+
+#include "mixture_impl.hpp"
 
 #endif

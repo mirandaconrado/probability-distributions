@@ -8,10 +8,10 @@ namespace ProbabilityDistributions {
   Mixture<K,D,W,T,Dists...>::Mixture(Dists&&... dists):
     stop_condition_(1e-4),
     max_iterations_(1000),
-    mixture_weights_(sizeof...(Dists)),
+    mixture_weights_(),
     components_(tuple_type(dists...)) {
       create_component_pointers(
-          CompileUtils::tuple_sequence_generator<tuple_type>());
+          typename CompileUtils::tuple_sequence_generator<tuple_type>::type());
     }
 
   template <unsigned int K, class D, class W, class T, class... Dists>
@@ -75,7 +75,7 @@ namespace ProbabilityDistributions {
   T Mixture<K,D,W,T,Dists...>::internal_log_likelihood(
       MA::ConstArray<D> const& data,
       MA::ConstArray<W> const& expected_weight) const {
-    MA::Slice<W> weight_slice(expected_weight, 0);
+    MA::ConstSlice<W> weight_slice(expected_weight, 0);
 
     T ll = 0;
     for (unsigned int k = 0; k < K; k++)
