@@ -40,7 +40,7 @@ namespace ProbabilityDistributions {
     for (size_t i = 0; i < n_samples; i++) {
       MA::Array<D> sample = slice.get_element(i);
       sample_components(sample, components_indexes(i), rng,
-          CompileUtils::tuple_sequence_generator<tuple_type>());
+          typename CompileUtils::tuple_sequence_generator<tuple_type>::type());
     }
   }
 
@@ -49,6 +49,7 @@ namespace ProbabilityDistributions {
   void Mixture<K,D,W,T,Dists...>::sample_components(MA::Array<D>& sample,
       size_t component_id, RNG& rng, CompileUtils::sequence<S...>) const {
     bool vec[] = {sample_component<S>(sample, component_id, rng)...};
+    (void)vec;
   }
 
   template <unsigned int K, class D, class W, class T, class... Dists>
@@ -58,6 +59,7 @@ namespace ProbabilityDistributions {
     if (I != component_id)
       return false;
     std::get<I>(components_).sample(sample, 1, rng);
+    return true;
   }
 
   template <unsigned int K, class D, class W, class T, class... Dists>
