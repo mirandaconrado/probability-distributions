@@ -31,9 +31,11 @@ namespace ProbabilityDistributions {
     assert(data.size()[0] > 0);
     assert(data.size()[1] == 1);
 
+    size_t counter = 0;
+
     std::vector<size_t> sorted_indexes(data.size()[0]);
     std::generate_n(sorted_indexes.begin(), data.size()[0],
-        []() { static size_t counter = 0; return counter++; });
+        [&]() { return counter++; });
 
     std::sort(sorted_indexes.begin(), sorted_indexes.end(),
         [&](size_t i, size_t j) { return data(i,0) <  data(j,0); });
