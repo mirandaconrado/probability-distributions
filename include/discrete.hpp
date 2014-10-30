@@ -12,7 +12,7 @@ namespace ProbabilityDistributions {
       static constexpr unsigned int sample_size = K;
 
       Discrete();
-      Discrete(std::vector<T> const& p);
+      explicit Discrete(std::vector<T> const& p);
 
       void set_p(std::vector<T> const& p) { assert(p.size() == K); p_ = p; normalize(); }
       std::vector<T> const& get_p() const { return p_; }
