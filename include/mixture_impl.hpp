@@ -98,14 +98,22 @@ namespace ProbabilityDistributions {
 
     MA::ConstSlice<D> data_slice(data, 0);
 
-    for (unsigned int i = 0; i < K; i++) {
+    MA::Array<W> null_weight({1});
+    null_weight(0) = 1;
+    MA::Size sample_size({1, SS});
+
+    for (unsigned int j = 0; j < data_slice.total_left_size(); j++) {
+      MA::ConstArray<D> sample = data_slice.get_element(j);
+      sample.resize(sample_size);
+
       W sum = 0;
-      for (unsigned int j = 0; j < data_slice.total_left_size(); j++) {
+      for (unsigned int i = 0; i < K; i++) {
         expected_weight(i,j) = mixture_weights_.get_p()[i] *
-          std::exp(components_pointers_[i]->log_likelihood(data_slice.get_element(j)));
+          std::exp(components_pointers_[i]->log_likelihood(sample, null_weight));
         sum += expected_weight(i,j);
       }
-      for (unsigned int j = 0; j < data_slice.total_left_size(); j++)
+
+      for (unsigned int i = 0; i < K; i++)
         expected_weight(i,j) *= weight(j) / sum;
     }
   }
@@ -157,7 +165,7 @@ namespace ProbabilityDistributions {
       }
 
     MA::Array<W> expected_weight;
-    T ll_old = INFINITY, ll_new = INFINITY;
+    T ll_old = -INFINITY, ll_new = -INFINITY;
     size_t it = 0;
 
     do {
@@ -176,10 +184,10 @@ namespace ProbabilityDistributions {
       mixture_weights_.MLE(expected_weight_transp);
 
       ll_new = internal_log_likelihood(data, expected_weight);
-      assert(ll_new <= ll_old);
+      assert(ll_new >= ll_old);
 
       it++;
-    } while(ll_old - ll_new > stop_condition_ && it < max_iterations_);
+    } while(ll_new - ll_old > stop_condition_ && it < max_iterations_);
 
     if (index_pointer != &indexes)
       delete index_pointer;

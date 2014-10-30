@@ -37,10 +37,10 @@ namespace ProbabilityDistributions {
         return mixture_weights_; }
 
       template <size_t I>
-      std::tuple_element<I,tuple_type>& get_component() {
+      typename std::tuple_element<I,tuple_type>::type& get_component() {
         return std::get<I>(components_); }
       template <size_t I>
-      std::tuple_element<I,tuple_type> const& get_component() const {
+      typename std::tuple_element<I,tuple_type>::type const& get_component() const {
         return std::get<I>(components_); }
 
       Distribution<D,W,T>* get_component_pointer(size_t i) {

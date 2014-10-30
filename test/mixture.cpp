@@ -1,5 +1,6 @@
 #include "mixture.hpp"
 #include "normal.hpp"
+#include "laplace.hpp"
 
 #include <gtest/gtest.h>
 
@@ -8,23 +9,33 @@
 using namespace MultidimensionalArray;
 using namespace ProbabilityDistributions;
 
-/*TEST(NormalTest, Likelihood) {
+TEST(MixtureTest, Likelihood) {
   boost::random::mt19937 rng;
   const unsigned int n_samples = 100;
-  Normal<double> dist(0, 1);
+  Normal<double> dist1(-10, 1);
+  Normal<double> dist2(10, 1);
+  auto dist = make_mixture(dist1, dist2);
   Array<double> samples;
   dist.sample(samples, n_samples, rng);
 
   double likelihood1 = dist.log_likelihood(samples);
+  (void)likelihood1;
+
+  dist.get_component<0>().set_mean(-0.1);
+  dist.get_component<1>().set_mean(0.1);
+
+  auto new_dist = make_mixture(Laplace<double>(-0.1, 1),
+      Laplace<double>(0.1, 1));
 
   dist.MLE(samples);
+  new_dist.MLE(samples);
 
   double likelihood2 = dist.log_likelihood(samples);
+  double new_likelihood = new_dist.log_likelihood(samples);
 
   EXPECT_GE(likelihood2, likelihood1);
-
-  EXPECT_LT(0, dist.get_sigma());
-}*/
+  EXPECT_GE(likelihood2, new_likelihood);
+}
 
 TEST(MixtureTest, Samples) {
   boost::random::mt19937 rng;
