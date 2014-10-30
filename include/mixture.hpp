@@ -14,7 +14,6 @@
 #include <type_traits>
 
 namespace ProbabilityDistributions {
-
   template <unsigned int SS, class D, class W = D, class T = W, class... Dists>
   class Mixture: public Distribution<D,W,T> {
     private:
@@ -24,7 +23,7 @@ namespace ProbabilityDistributions {
       static constexpr unsigned int sample_size = SS;
       static constexpr unsigned int K = sizeof...(Dists);
 
-      Mixture(Dists&&... dists);
+      explicit Mixture(Dists&&... dists);
 
       void set_stop_condition(T condition) { stop_condition_ = condition; }
       T get_stop_condition() const { return stop_condition_; }
@@ -84,7 +83,6 @@ namespace ProbabilityDistributions {
 
       MA::Array<W> transpose(MA::Array<W> const& original) const;
 
-
       T stop_condition_;
       size_t max_iterations_;
       Discrete<K,D,W,T> mixture_weights_;
@@ -122,6 +120,20 @@ namespace ProbabilityDistributions {
         CompileUtils::and_<CompileUtils::clean_type<D1>::type::sample_size ==
         CompileUtils::clean_type<Dists>::type::sample_size...>::value,
         "All distributions must have the same sample size");
+
+    typedef Distribution<
+      typename CompileUtils::clean_type<D1>::type::data_type,
+      typename CompileUtils::clean_type<D1>::type::weight_type,
+      typename CompileUtils::clean_type<D1>::type::float_type> base_distribution;
+
+    static_assert(
+        CompileUtils::and_<
+          std::is_base_of<base_distribution,
+                          typename CompileUtils::clean_type<D1>::type>::value,
+          std::is_base_of<base_distribution,
+                          typename CompileUtils::clean_type<Dists>::type>::value...
+          >::value,
+          "Distributions must be derived from abstract distribution class");
 
     return Mixture<CompileUtils::clean_type<D1>::type::sample_size,
            typename CompileUtils::clean_type<D1>::type::data_type,
