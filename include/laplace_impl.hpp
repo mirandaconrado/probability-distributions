@@ -31,13 +31,13 @@ namespace ProbabilityDistributions {
     boost::random::uniform_smallint<int> dist1(0, 1);
     boost::random::exponential_distribution<T> dist2(b_);
 
-    MA::Slice<T> slice(samples, 0);
-    for (size_t j = 0; j < slice.total_left_size(); j++) {
-      MA::Array<T> s = slice.get_element(j);
+    D* ptr = samples.get_pointer();
+
+    for (size_t j = 0; j < n_samples; j++) {
       if (dist1(rng))
-        s(0) = mu_ + dist2(rng);
+        ptr[j] = mu_ + dist2(rng);
       else
-        s(0) = mu_ - dist2(rng);
+        ptr[j] = mu_ - dist2(rng);
     }
   }
 
@@ -46,14 +46,14 @@ namespace ProbabilityDistributions {
       MA::ConstArray<W> const& weight) const {
     check_data_and_weight(data, weight);
 
+    D const* ptr = data.get_pointer();
+
     T ll = 0;
     T b_likelihood = std::log(2*b_);
 
-    MA::ConstSlice<T> slice(data, 0);
-    for (size_t j = 0; j < slice.total_left_size(); j++) {
-      MA::ConstArray<T> const& sample = slice.get_element(j);
+    for (size_t j = 0; j < data.total_size(); j++) {
       T w = weight(j);
-      T s = sample(0);
+      T s = ptr[j];
       T local_likelihood = std::abs(s - mu_) * inv_b_;
       local_likelihood += b_likelihood;
       ll -= w * local_likelihood;
@@ -68,41 +68,41 @@ namespace ProbabilityDistributions {
     check_data_and_weight(data, weight);
     assert(data.size()[0] == indexes.size());
 
+    D const* ptr = data.get_pointer();
+    auto data_size = data.size()[0];
+
     if (!fixed_mu_) {
       T total_sum = 0;
-      std::vector<T> p_n(data.size()[0]);
-      for (size_t j = 0; j < data.size()[0]; j++) {
+      std::vector<T> p_n(data_size);
+      for (size_t j = 0; j < data_size; j++) {
         T w = weight(indexes[j]);
         total_sum += w;
         p_n[j] = total_sum - w/2;
       }
 
-      for (size_t j = 0; j < data.size()[0]; j++)
+      for (size_t j = 0; j < data_size; j++)
         p_n[j] /= total_sum;
 
       if (p_n[0] >= 0.5)
-        set_mu(data(0,0));
+        set_mu(ptr[indexes[0]]);
       else if (p_n[p_n.size()-1] <= 0.5)
-        set_mu(data(p_n.size()-1,0));
+        set_mu(ptr[indexes[p_n.size()-1]]);
       else {
-        for (size_t j = 1; j < data.size()[0]-1; j++)
+        for (size_t j = 1; j < data_size-1; j++)
           if (p_n[j] <= 0.5) {
             T scale = (0.5 - p_n[j])/(p_n[j+1] - p_n[j]);
-            T offset = data(indexes[j], 0);
-            set_mu(offset + scale * (data(indexes[j+1],0) -
-                  data(indexes[j],0)));
+            T offset = ptr[indexes[j]];
+            set_mu(offset + scale * (ptr[indexes[j+1]] - ptr[indexes[j]]));
           }
       }
     }
 
     if (!fixed_b_) {
       T sum_0 = 0, sum_1 = 0;
-      MA::ConstSlice<T> slice(data, 0);
-      for (size_t j = 0; j < slice.total_left_size(); j++) {
-        MA::ConstArray<T> const& sample = slice.get_element(j);
+      for (size_t j = 0; j < data.total_size(); j++) {
         T w = weight(j);
         sum_0 += w;
-        sum_1 += w*std::abs(sample(0) - mu_);
+        sum_1 += w*std::abs(ptr[j] - mu_);
       }
 
       set_b(sum_1 / sum_0);

@@ -29,11 +29,10 @@ namespace ProbabilityDistributions {
 
     boost::random::normal_distribution<T> dist(mean_, sigma_);
 
-    MA::Slice<T> slice(samples, 0);
-    for (size_t j = 0; j < slice.total_left_size(); j++) {
-      MA::Array<T> s = slice.get_element(j);
-      s(0) = dist(rng);
-    }
+    D* ptr = samples.get_pointer();
+
+    for (size_t j = 0; j < n_samples; j++)
+      ptr[j] = dist(rng);
   }
 
   template <class D, class W, class T>
@@ -41,14 +40,14 @@ namespace ProbabilityDistributions {
       MA::ConstArray<W> const& weight) const {
     check_data_and_weight(data, weight);
 
+    D const* ptr = data.get_pointer();
+
     T ll = 0;
     T sigma_likelihood = std::log(2*M_PI*sigma_*sigma_)/2;
 
-    MA::ConstSlice<T> slice(data, 0);
-    for (size_t j = 0; j < slice.total_left_size(); j++) {
-      MA::ConstArray<T> const& sample = slice.get_element(j);
+    for (size_t j = 0; j < data.total_size(); j++) {
       T w = weight(j);
-      T s = sample(0);
+      T s = ptr[j];
       T local_likelihood = s - mean_;
       local_likelihood *= local_likelihood;
       local_likelihood *= inv_sigma2_;
@@ -64,14 +63,15 @@ namespace ProbabilityDistributions {
       MA::ConstArray<W> const& weight, std::vector<size_t> const& indexes) {
     check_data_and_weight(data, weight);
 
+    D const* ptr = data.get_pointer();
+
     T sum_0 = 0, sum_1 = 0, sum_2 = 0;
-    MA::ConstSlice<T> slice(data, 0);
-    for (size_t j = 0; j < slice.total_left_size(); j++) {
-      MA::ConstArray<T> const& sample = slice.get_element(j);
+    for (size_t j = 0; j < data.total_size(); j++) {
       T w = weight(j);
+      T s = ptr[j];
       sum_0 += w;
-      sum_1 += w*sample(0);
-      sum_2 += w*sample(0)*sample(0);
+      sum_1 += w*s;
+      sum_2 += w*s*s;
     }
 
     if (!fixed_mean_)
