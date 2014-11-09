@@ -83,12 +83,13 @@ namespace ProbabilityDistributions {
       for (size_t j = 0; j < data_size; j++)
         p_n[j] /= total_sum;
 
+      // The first two conditions should never happen for median!
       if (p_n[0] >= 0.5)
         set_mu(ptr[indexes[0]]);
       else if (p_n[p_n.size()-1] <= 0.5)
         set_mu(ptr[indexes[p_n.size()-1]]);
       else {
-        for (size_t j = 1; j < data_size-1; j++)
+        for (size_t j = 0; j < data_size-1; j++)
           if (p_n[j] <= 0.5) {
             T scale = (0.5 - p_n[j])/(p_n[j+1] - p_n[j]);
             T offset = ptr[indexes[j]];
