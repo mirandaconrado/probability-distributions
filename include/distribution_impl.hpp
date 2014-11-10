@@ -42,6 +42,47 @@ namespace ProbabilityDistributions {
 
     return sorted_indexes;
   }
+
+  template <class D, class W, class T>
+  D Distribution<D,W,T>::get_percentile(T p, MA::ConstArray<D> const& data,
+      MA::ConstArray<D> const& weight, std::vector<size_t> const& indexes) {
+    assert(data.size().size() == 2);
+    assert(data.size()[0] > 0);
+    assert(data.size()[1] == 1);
+    assert(weight.size().size() == 1);
+    assert(weight.size()[0] == data.size()[0]);
+    assert(data.size()[0] == indexes.size());
+
+    auto data_size = data.size()[0];
+    D const* ptr = data.get_pointer();
+
+    T total_sum = 0;
+    std::vector<T> p_n(data_size);
+    for (size_t j = 0; j < data_size; j++) {
+      T w = weight(indexes[j]);
+      total_sum += w;
+      p_n[j] = total_sum - w/2;
+    }
+
+    for (size_t j = 0; j < data_size; j++)
+      p_n[j] /= total_sum;
+
+    if (p_n[0] >= p)
+      return ptr[indexes[0]];
+    else if (p_n[p_n.size()-1] <= p)
+      return ptr[indexes[p_n.size()-1]];
+    else {
+      for (size_t j = 1; j < data_size; j++)
+        if (p_n[j] >= p) {
+          T scale = (p - p_n[j-1])/(p_n[j] - p_n[j-1]);
+          T offset = ptr[indexes[j-1]];
+          return offset + scale * (ptr[indexes[j]] - ptr[indexes[j-1]]);
+        }
+    }
+
+    assert(false);
+    return NAN;
+  }
 };
 
 #endif

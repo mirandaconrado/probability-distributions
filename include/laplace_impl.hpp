@@ -69,35 +69,9 @@ namespace ProbabilityDistributions {
     assert(data.size()[0] == indexes.size());
 
     D const* ptr = data.get_pointer();
-    auto data_size = data.size()[0];
 
-    if (!fixed_mu_) {
-      T total_sum = 0;
-      std::vector<T> p_n(data_size);
-      for (size_t j = 0; j < data_size; j++) {
-        T w = weight(indexes[j]);
-        total_sum += w;
-        p_n[j] = total_sum - w/2;
-      }
-
-      for (size_t j = 0; j < data_size; j++)
-        p_n[j] /= total_sum;
-
-      // The first two conditions should never happen for median!
-      if (p_n[0] >= 0.5)
-        set_mu(ptr[indexes[0]]);
-      else if (p_n[p_n.size()-1] <= 0.5)
-        set_mu(ptr[indexes[p_n.size()-1]]);
-      else {
-        for (size_t j = 1; j < data_size; j++)
-          if (p_n[j] >= 0.5) {
-            T scale = (0.5 - p_n[j-1])/(p_n[j] - p_n[j-1]);
-            T offset = ptr[indexes[j-1]];
-            set_mu(offset + scale * (ptr[indexes[j]] - ptr[indexes[j-1]]));
-            break;
-          }
-      }
-    }
+    if (!fixed_mu_)
+      set_mu(Distribution<D,W,T>::get_percentile(0.5, data, weight, indexes));
 
     if (!fixed_b_) {
       T sum_0 = 0, sum_1 = 0;

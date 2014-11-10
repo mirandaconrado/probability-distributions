@@ -29,6 +29,9 @@ namespace ProbabilityDistributions {
       virtual bool require_sorted() const { return false; }
 
       static std::vector<size_t> sort_data(MA::ConstArray<D> const& data);
+
+      static D get_percentile(T p, MA::ConstArray<D> const& data,
+          MA::ConstArray<D> const& weight, std::vector<size_t> const& indexes);
   };
 };
 
