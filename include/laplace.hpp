@@ -7,16 +7,16 @@ namespace ProbabilityDistributions {
   template <class D, class W = D, class T = W>
   class Laplace: public Distribution<D,W,T> {
     public:
-      Laplace(T mu, T b);
+      Laplace(T mu, T lambda);
 
       static constexpr unsigned int sample_size = 1;
 
       void fix_mu(bool fixed = true) { fixed_mu_ = fixed; }
-      void fix_b(bool fixed = true) { fixed_b_ = fixed; }
+      void fix_lambda(bool fixed = true) { fixed_lambda_ = fixed; }
       void set_mu(T mu) { mu_ = mu; }
-      void set_b(T b) { assert(b > 0); b_ = b, inv_b_ = 1/b; }
+      void set_lambda(T lambda) { assert(lambda > 0); lambda_ = lambda; }
       T get_mu() const { return mu_; }
-      T get_b() const { return b_; }
+      T get_lambda() const { return lambda_; }
 
       template <class RNG>
       void sample(MA::Array<D>& samples, size_t n_samples, RNG& rng) const;
@@ -35,8 +35,8 @@ namespace ProbabilityDistributions {
       void check_data_and_weight(MA::ConstArray<D> const& data,
           MA::ConstArray<W> const& weight) const;
 
-      bool fixed_mu_, fixed_b_;
-      T mu_, b_, inv_b_;
+      bool fixed_mu_, fixed_lambda_;
+      T mu_, lambda_;
   };
 };
 

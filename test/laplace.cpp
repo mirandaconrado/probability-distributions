@@ -24,7 +24,7 @@ TEST(LaplaceTest, Likelihood) {
 
   EXPECT_GE(likelihood2, likelihood1);
 
-  EXPECT_LT(0, dist.get_b());
+  EXPECT_LT(0, dist.get_lambda());
 }
 
 TEST(LaplaceTest, Samples) {

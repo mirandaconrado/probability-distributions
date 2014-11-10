@@ -12,11 +12,11 @@
 
 namespace ProbabilityDistributions {
   template <class D, class W, class T>
-  Laplace<D,W,T>::Laplace(T mu, T b):
+  Laplace<D,W,T>::Laplace(T mu, T lambda):
     fixed_mu_(false),
-    fixed_b_(false) {
+    fixed_lambda_(false) {
       set_mu(mu);
-      set_b(b);
+      set_lambda(lambda);
     }
 
   template <class D, class W, class T>
@@ -29,7 +29,7 @@ namespace ProbabilityDistributions {
     samples.resize(size);
 
     boost::random::uniform_smallint<int> dist1(0, 1);
-    boost::random::exponential_distribution<T> dist2(b_);
+    boost::random::exponential_distribution<T> dist2(lambda_);
 
     D* ptr = samples.get_pointer();
 
@@ -49,14 +49,14 @@ namespace ProbabilityDistributions {
     D const* ptr = data.get_pointer();
 
     T ll = 0;
-    T b_likelihood = std::log(2*b_);
+    T lambda_likelihood = std::log(lambda_/2);
 
     for (size_t j = 0; j < data.total_size(); j++) {
       T w = weight(j);
       T s = ptr[j];
-      T local_likelihood = std::abs(s - mu_) * inv_b_;
-      local_likelihood += b_likelihood;
-      ll -= w * local_likelihood;
+      T local_likelihood = -std::abs(s - mu_) * lambda_;
+      local_likelihood += lambda_likelihood;
+      ll += w * local_likelihood;
     }
 
     return ll;
@@ -73,7 +73,7 @@ namespace ProbabilityDistributions {
     if (!fixed_mu_)
       set_mu(Distribution<D,W,T>::get_percentile(0.5, data, weight, indexes));
 
-    if (!fixed_b_) {
+    if (!fixed_lambda_) {
       T sum_0 = 0, sum_1 = 0;
       for (size_t j = 0; j < data.total_size(); j++) {
         T w = weight(j);
@@ -81,7 +81,7 @@ namespace ProbabilityDistributions {
         sum_1 += w*std::abs(ptr[j] - mu_);
       }
 
-      set_b(sum_1 / sum_0);
+      set_lambda(sum_0 / sum_1);
     }
   }
 
