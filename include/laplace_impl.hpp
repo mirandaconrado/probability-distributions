@@ -89,11 +89,12 @@ namespace ProbabilityDistributions {
       else if (p_n[p_n.size()-1] <= 0.5)
         set_mu(ptr[indexes[p_n.size()-1]]);
       else {
-        for (size_t j = 0; j < data_size-1; j++)
-          if (p_n[j] <= 0.5) {
-            T scale = (0.5 - p_n[j])/(p_n[j+1] - p_n[j]);
-            T offset = ptr[indexes[j]];
-            set_mu(offset + scale * (ptr[indexes[j+1]] - ptr[indexes[j]]));
+        for (size_t j = 1; j < data_size; j++)
+          if (p_n[j] >= 0.5) {
+            T scale = (0.5 - p_n[j-1])/(p_n[j] - p_n[j-1]);
+            T offset = ptr[indexes[j-1]];
+            set_mu(offset + scale * (ptr[indexes[j]] - ptr[indexes[j-1]]));
+            break;
           }
       }
     }
