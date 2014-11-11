@@ -37,8 +37,10 @@ namespace ProbabilityDistributions {
     std::generate_n(sorted_indexes.begin(), data.size()[0],
         [&]() { return counter++; });
 
+    D const* ptr = data.get_pointer();
+
     std::sort(sorted_indexes.begin(), sorted_indexes.end(),
-        [&](size_t i, size_t j) { return data(i,0) <  data(j,0); });
+        [&](size_t i, size_t j) { return ptr[i] < ptr[j]; });
 
     return sorted_indexes;
   }
