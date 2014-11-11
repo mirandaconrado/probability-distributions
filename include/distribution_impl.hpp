@@ -4,6 +4,7 @@
 #include "distribution.hpp"
 
 #include <algorithm>
+#include <numeric>
 
 namespace ProbabilityDistributions {
   template <class D, class W, class T>
@@ -31,16 +32,15 @@ namespace ProbabilityDistributions {
     assert(data.size()[0] > 0);
     assert(data.size()[1] == 1);
 
-    size_t counter = 0;
-
     std::vector<size_t> sorted_indexes(data.size()[0]);
-    std::generate_n(sorted_indexes.begin(), data.size()[0],
-        [&]() { return counter++; });
+
+    size_t counter = 0;
+    std::iota(sorted_indexes.begin(), sorted_indexes.end(), counter);
 
     D const* ptr = data.get_pointer();
 
     std::sort(sorted_indexes.begin(), sorted_indexes.end(),
-        [&](size_t i, size_t j) { return ptr[i] < ptr[j]; });
+        [ptr](size_t i, size_t j) { return ptr[i] < ptr[j]; });
 
     return sorted_indexes;
   }
