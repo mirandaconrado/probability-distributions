@@ -54,15 +54,16 @@ namespace ProbabilityDistributions {
     T ll = 0;
     T lambda_likelihood = std::log(lambda_) + (std::log(p_) + std::log(1-p_))/2;
 
+    T neg_const = lambda_ * alpha_inv_, pos_const = -lambda_ * alpha_;
+
     for (size_t j = 0; j < data.total_size(); j++) {
       T w = weight(j);
       T s = ptr[j];
-      T local_likelihood = (s - mu_) * lambda_;
+      T local_likelihood = lambda_likelihood;
       if (s < mu_)
-        local_likelihood *= alpha_inv_;
+        local_likelihood += (s - mu_) * neg_const;
       else
-        local_likelihood *= -alpha_;
-      local_likelihood += lambda_likelihood;
+        local_likelihood += (s - mu_) * pos_const;
       ll += w * local_likelihood;
     }
 
