@@ -71,12 +71,22 @@ namespace ProbabilityDistributions {
     else if (p_n[p_n.size()-1] <= p)
       return ptr[indexes[p_n.size()-1]];
     else {
-      for (size_t j = 1; j < data_size; j++)
-        if (p_n[j] >= p) {
-          T scale = (p - p_n[j-1])/(p_n[j] - p_n[j-1]);
-          T offset = ptr[indexes[j-1]];
-          return offset + scale * (ptr[indexes[j]] - ptr[indexes[j-1]]);
-        }
+      size_t start = 1, end = data_size-1;
+      size_t mid;
+      while (start < end) {
+        mid = (start + end)/2;
+        if (p_n[mid] >= p)
+          end = mid;
+        else
+          start = mid+1;
+      }
+
+      size_t j = start;
+      assert(p_n[j] >= p);
+      assert(p_n[j-1] < p);
+      T scale = (p - p_n[j-1])/(p_n[j] - p_n[j-1]);
+      T offset = ptr[indexes[j-1]];
+      return offset + scale * (ptr[indexes[j]] - ptr[indexes[j-1]]);
     }
 
     assert(false);
