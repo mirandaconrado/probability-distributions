@@ -32,6 +32,13 @@ namespace ProbabilityDistributions {
 
       static D get_percentile(T p, MA::ConstArray<D> const& data,
           MA::ConstArray<D> const& weight, std::vector<size_t> const& indexes);
+      static D get_percentile(T p, MA::ConstArray<D> const& data,
+          MA::ConstArray<D> const& weight, std::vector<size_t> const& indexes,
+          std::vector<T> const& percentile_vector);
+
+      static std::vector<T> build_percentile_vector(
+          MA::ConstArray<D> const& weight,
+          std::vector<size_t> const& indexes);
   };
 };
 
