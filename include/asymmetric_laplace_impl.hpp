@@ -76,8 +76,7 @@ namespace ProbabilityDistributions {
     check_data_and_weight(data, weight);
     assert(data.size()[0] == indexes.size());
 
-    percentile_vector_ = Distribution<D,W,T>::build_percentile_vector(weight,
-        indexes);
+    init_MLE(data, weight, indexes);
 
     if (fixed_p_)
       MLE_fixed_p(data, weight, indexes);
@@ -122,7 +121,7 @@ namespace ProbabilityDistributions {
       set_lambda(best_lambda);
     }
 
-    percentile_vector_.clear();
+    end_MLE();
   }
 
   template <class D, class W, class T>
@@ -160,6 +159,18 @@ namespace ProbabilityDistributions {
     }
     else
       return NAN;
+  }
+
+  template <class D, class W, class T>
+  void AsymmetricLaplace<D,W,T>::init_MLE(MA::ConstArray<D> const& data,
+      MA::ConstArray<D> const& weight, std::vector<size_t> const& indexes) {
+    percentile_vector_ = Distribution<D,W,T>::build_percentile_vector(weight,
+        indexes);
+  }
+
+  template <class D, class W, class T>
+  void AsymmetricLaplace<D,W,T>::end_MLE() {
+    percentile_vector_.clear();
   }
 
   template <class D, class W, class T>
