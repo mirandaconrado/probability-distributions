@@ -31,6 +31,29 @@ TEST(DiscreteTest, Likelihood) {
   EXPECT_DOUBLE_EQ(1, sum);
 }
 
+TEST(DiscreteTest, MLE) {
+  boost::random::mt19937 rng;
+  const unsigned int n_samples = 100;
+  Discrete<5, double> dist;
+  Array<double> samples;
+  dist.sample(samples, n_samples, rng);
+  dist.MLE(samples);
+
+  std::vector<double> p = dist.get_p();
+  double eps = 1e-2;
+  double ll = dist.log_likelihood(samples);
+
+  for (int i = 0; i < 5; i++) {
+    p[i] += eps;
+    dist.set_p(p);
+    EXPECT_GE(ll, dist.log_likelihood(samples));
+    p[i] -= 2* eps;
+    dist.set_p(p);
+    EXPECT_GE(ll, dist.log_likelihood(samples));
+    p[i] += eps;
+  }
+}
+
 TEST(DiscreteTest, Samples) {
   boost::random::mt19937 rng;
   const unsigned int n_samples = 100;

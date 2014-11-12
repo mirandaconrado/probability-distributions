@@ -27,6 +27,32 @@ TEST(LaplaceTest, Likelihood) {
   EXPECT_LT(0, dist.get_lambda());
 }
 
+TEST(LaplaceTest, MLE) {
+  boost::random::mt19937 rng;
+  const unsigned int n_samples = 100;
+  Laplace<double> dist(0, 1);
+  Array<double> samples;
+  dist.sample(samples, n_samples, rng);
+  auto indexes = Distribution<double>::sort_data(samples);
+  dist.MLE(samples, indexes);
+
+  double mu = dist.get_mu(), lambda = dist.get_lambda();
+  double eps = 1e-2;
+  double ll = dist.log_likelihood(samples);
+
+  dist.set_mu(mu + eps);
+  EXPECT_GE(ll, dist.log_likelihood(samples));
+  dist.set_mu(mu - eps);
+  EXPECT_GE(ll, dist.log_likelihood(samples));
+  dist.set_mu(mu);
+
+  dist.set_lambda(lambda + eps);
+  EXPECT_GE(ll, dist.log_likelihood(samples));
+  dist.set_lambda(lambda - eps);
+  EXPECT_GE(ll, dist.log_likelihood(samples));
+  dist.set_lambda(lambda);
+}
+
 TEST(LaplaceTest, Samples) {
   boost::random::mt19937 rng;
   const unsigned int n_samples = 100;

@@ -66,6 +66,38 @@ TEST(AsymmetricLaplaceTest, LikelihoodConsistency) {
   EXPECT_DOUBLE_EQ(dist1.get_lambda(), dist2.get_lambda());
 }
 
+TEST(AsymmetricLaplaceTest, MLE) {
+  boost::random::mt19937 rng;
+  const unsigned int n_samples = 100;
+  AsymmetricLaplace<double> dist(0.5, 0, 1);
+  Array<double> samples;
+  dist.sample(samples, n_samples, rng);
+  auto indexes = Distribution<double>::sort_data(samples);
+  dist.MLE(samples, indexes);
+
+  double p = dist.get_p(), mu = dist.get_mu(), lambda = dist.get_lambda();
+  double eps = 1e-2;
+  double ll = dist.log_likelihood(samples);
+
+  dist.set_p(p + eps);
+  EXPECT_GE(ll, dist.log_likelihood(samples));
+  dist.set_p(p - eps);
+  EXPECT_GE(ll, dist.log_likelihood(samples));
+  dist.set_p(p);
+
+  dist.set_mu(mu + eps);
+  EXPECT_GE(ll, dist.log_likelihood(samples));
+  dist.set_mu(mu - eps);
+  EXPECT_GE(ll, dist.log_likelihood(samples));
+  dist.set_mu(mu);
+
+  dist.set_lambda(lambda + eps);
+  EXPECT_GE(ll, dist.log_likelihood(samples));
+  dist.set_lambda(lambda - eps);
+  EXPECT_GE(ll, dist.log_likelihood(samples));
+  dist.set_lambda(lambda);
+}
+
 TEST(AsymmetricLaplaceTest, Samples) {
   boost::random::mt19937 rng;
   const unsigned int n_samples = 100;
