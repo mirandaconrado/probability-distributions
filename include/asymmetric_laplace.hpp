@@ -38,12 +38,10 @@ namespace ProbabilityDistributions {
       T fix_step(T p, T step) const;
 
       T compute_p_derivative(T p, T ll, T eps, MA::ConstArray<D> const& data,
-          MA::ConstArray<D> const& weight, std::vector<size_t> const& indexes,
-          std::vector<T> const& percentile_vector);
+          MA::ConstArray<D> const& weight, std::vector<size_t> const& indexes);
 
       void MLE_fixed_p(MA::ConstArray<D> const& data,
-          MA::ConstArray<W> const& weight, std::vector<size_t> const& indexes,
-          std::vector<T> const& percentile_vector);
+          MA::ConstArray<W> const& weight, std::vector<size_t> const& indexes);
 
       void compute_alpha();
       void check_data_and_weight(MA::ConstArray<D> const& data,
@@ -51,6 +49,7 @@ namespace ProbabilityDistributions {
 
       bool fixed_p_, fixed_mu_, fixed_lambda_;
       T p_, mu_, lambda_, alpha_, alpha_inv_;
+      std::vector<T> percentile_vector_;
   };
 };
 

@@ -76,17 +76,15 @@ namespace ProbabilityDistributions {
     check_data_and_weight(data, weight);
     assert(data.size()[0] == indexes.size());
 
-    if (fixed_p_)
-      MLE_fixed_p(data, weight, indexes,
-          Distribution<D,W,T>::build_percentile_vector(weight, indexes));
-    else {
-      std::vector<T> percentile_vector =
-        Distribution<D,W,T>::build_percentile_vector(weight, indexes);
+    percentile_vector_ = Distribution<D,W,T>::build_percentile_vector(weight,
+        indexes);
 
+    if (fixed_p_)
+      MLE_fixed_p(data, weight, indexes);
+    else {
       T eps = 1e-4;
       T ll = log_likelihood(data, weight);
-      T diff = compute_p_derivative(p_, ll, eps, data, weight, indexes,
-          percentile_vector);
+      T diff = compute_p_derivative(p_, ll, eps, data, weight, indexes);
 
       if (isnan(diff))
         return;
@@ -99,7 +97,7 @@ namespace ProbabilityDistributions {
       T tol = 1e-6;
       while (std::abs(step) > tol) {
         set_p(best_p + step);
-        MLE_fixed_p(data, weight, indexes, percentile_vector);
+        MLE_fixed_p(data, weight, indexes);
         T new_ll = log_likelihood(data, weight);
 
         if (new_ll >= best_ll) {
@@ -109,7 +107,7 @@ namespace ProbabilityDistributions {
           best_ll = new_ll;
 
           diff = compute_p_derivative(best_p, best_ll, eps, data, weight,
-              indexes, percentile_vector);
+              indexes);
           if (isnan(diff))
             return;
           step = fix_step(p_,
@@ -123,6 +121,8 @@ namespace ProbabilityDistributions {
       set_mu(best_mu);
       set_lambda(best_lambda);
     }
+
+    percentile_vector_.clear();
   }
 
   template <class D, class W, class T>
@@ -135,27 +135,26 @@ namespace ProbabilityDistributions {
   template <class D, class W, class T>
   T AsymmetricLaplace<D,W,T>::compute_p_derivative(T p, T ll, T eps,
       MA::ConstArray<D> const& data, MA::ConstArray<D> const& weight,
-      std::vector<size_t> const& indexes,
-      std::vector<T> const& percentile_vector) {
+      std::vector<size_t> const& indexes) {
     T ll_pos, ll_neg;
     if (p_ + eps <= 1 && p_ - eps >= 0) {
       set_p(p_ + eps);
-      MLE_fixed_p(data, weight, indexes, percentile_vector);
+      MLE_fixed_p(data, weight, indexes);
       ll_pos = log_likelihood(data, weight);
       set_p(p_ - eps);
-      MLE_fixed_p(data, weight, indexes, percentile_vector);
+      MLE_fixed_p(data, weight, indexes);
       ll_neg = log_likelihood(data, weight);
       return (ll_pos - ll_neg) / (2*eps);
     }
     else if (p_ + eps <= 1) {
       set_p(p_ + eps);
-      MLE_fixed_p(data, weight, indexes, percentile_vector);
+      MLE_fixed_p(data, weight, indexes);
       ll_pos = log_likelihood(data, weight);
       return (ll_pos - ll) / eps;
     }
     else if (p_ - eps >= 0) {
       set_p(p_ - eps);
-      MLE_fixed_p(data, weight, indexes, percentile_vector);
+      MLE_fixed_p(data, weight, indexes);
       ll_neg = log_likelihood(data, weight);
       return (ll - ll_neg) / eps;
     }
@@ -165,13 +164,12 @@ namespace ProbabilityDistributions {
 
   template <class D, class W, class T>
   void AsymmetricLaplace<D,W,T>::MLE_fixed_p(MA::ConstArray<D> const& data,
-      MA::ConstArray<W> const& weight, std::vector<size_t> const& indexes,
-      std::vector<T> const& percentile_vector) {
+      MA::ConstArray<W> const& weight, std::vector<size_t> const& indexes) {
     D const* ptr = data.get_pointer();
 
     if (!fixed_mu_)
       set_mu(Distribution<D,W,T>::get_percentile(p_, data, weight, indexes,
-            percentile_vector));
+            percentile_vector_));
 
     if (!fixed_lambda_) {
       T sum_0 = 0, sum_1_pos = 0, sum_1_neg = 0;
