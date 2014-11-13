@@ -6,8 +6,6 @@
 #include "const_slice.hpp"
 #include "slice.hpp"
 
-#include <boost/random/uniform_real_distribution.hpp>
-#include <boost/random/exponential_distribution.hpp>
 #include <cmath>
 
 namespace ProbabilityDistributions {
@@ -50,7 +48,7 @@ namespace ProbabilityDistributions {
 
   template <class D, class W, class T>
   void AsymmetricLaplace<D,W,T>::init_MLE(MA::ConstArray<D> const& data,
-      MA::ConstArray<D> const& weight, std::vector<size_t> const& indexes) {
+      MA::ConstArray<W> const& weight, std::vector<size_t> const& indexes) {
     percentile_vector_ = Distribution<D,W,T>::build_percentile_vector(weight,
         indexes);
   }

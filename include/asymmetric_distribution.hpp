@@ -37,10 +37,10 @@ namespace ProbabilityDistributions {
       T fix_step(T p, T step) const;
 
       T compute_p_derivative(T p, T ll, MA::ConstArray<D> const& data,
-          MA::ConstArray<D> const& weight, std::vector<size_t> const& indexes);
+          MA::ConstArray<W> const& weight, std::vector<size_t> const& indexes);
 
       virtual void init_MLE(MA::ConstArray<D> const& data,
-          MA::ConstArray<D> const& weight,
+          MA::ConstArray<W> const& weight,
           std::vector<size_t> const& indexes) { }
       virtual void end_MLE() { }
 

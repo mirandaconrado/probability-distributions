@@ -33,7 +33,7 @@ namespace ProbabilityDistributions {
       std::vector<T> get_parameter_vector() const { return {lambda_}; }
 
       void init_MLE(MA::ConstArray<D> const& data,
-          MA::ConstArray<D> const& weight, std::vector<size_t> const& indexes);
+          MA::ConstArray<W> const& weight, std::vector<size_t> const& indexes);
       void end_MLE();
       void updated_p();
 

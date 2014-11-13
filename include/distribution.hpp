@@ -31,13 +31,13 @@ namespace ProbabilityDistributions {
       static std::vector<size_t> sort_data(MA::ConstArray<D> const& data);
 
       static D get_percentile(T p, MA::ConstArray<D> const& data,
-          MA::ConstArray<D> const& weight, std::vector<size_t> const& indexes);
+          MA::ConstArray<W> const& weight, std::vector<size_t> const& indexes);
       static D get_percentile(T p, MA::ConstArray<D> const& data,
-          MA::ConstArray<D> const& weight, std::vector<size_t> const& indexes,
+          MA::ConstArray<W> const& weight, std::vector<size_t> const& indexes,
           std::vector<T> const& percentile_vector);
 
       static std::vector<T> build_percentile_vector(
-          MA::ConstArray<D> const& weight,
+          MA::ConstArray<W> const& weight,
           std::vector<size_t> const& indexes);
   };
 };

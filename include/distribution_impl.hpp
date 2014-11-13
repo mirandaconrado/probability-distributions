@@ -47,14 +47,14 @@ namespace ProbabilityDistributions {
 
   template <class D, class W, class T>
   D Distribution<D,W,T>::get_percentile(T p, MA::ConstArray<D> const& data,
-      MA::ConstArray<D> const& weight, std::vector<size_t> const& indexes) {
+      MA::ConstArray<W> const& weight, std::vector<size_t> const& indexes) {
     return get_percentile(p, data, weight, indexes,
         build_percentile_vector(weight, indexes));
   }
 
   template <class D, class W, class T>
   D Distribution<D,W,T>::get_percentile(T p, MA::ConstArray<D> const& data,
-      MA::ConstArray<D> const& weight, std::vector<size_t> const& indexes,
+      MA::ConstArray<W> const& weight, std::vector<size_t> const& indexes,
       std::vector<T> const& percentile_vector) {
     assert(data.size().size() == 2);
     assert(data.size()[0] > 0);
@@ -97,7 +97,7 @@ namespace ProbabilityDistributions {
 
   template <class D, class W, class T>
   std::vector<T> Distribution<D,W,T>::build_percentile_vector(
-      MA::ConstArray<D> const& weight, std::vector<size_t> const& indexes) {
+      MA::ConstArray<W> const& weight, std::vector<size_t> const& indexes) {
     assert(weight.size().size() == 1);
     assert(weight.size()[0] == indexes.size());
 

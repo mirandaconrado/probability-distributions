@@ -146,7 +146,7 @@ namespace ProbabilityDistributions {
 
   template <class Dist, class D, class W, class T>
   T AsymmetricDistribution<Dist,D,W,T>::compute_p_derivative(T p, T ll,
-      MA::ConstArray<D> const& data, MA::ConstArray<D> const& weight,
+      MA::ConstArray<D> const& data, MA::ConstArray<W> const& weight,
       std::vector<size_t> const& indexes) {
     T ll_pos, ll_neg;
     if (p_ + eps_ <= 1 && p_ - eps_ >= 0) {
