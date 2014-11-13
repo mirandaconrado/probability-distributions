@@ -105,11 +105,6 @@ namespace ProbabilityDistributions {
       if (data.total_size() == 1) {
         base_class::set_mu(ptr[0]);
       }
-      /*else if (data.total_size() == 2) {
-        T mu = alpha2_inv_ * neg_sum_all_1_[1] + alpha2_ * pos_sum_all_1_[0];
-        mu /= alpha2_inv_ * neg_sum_all_0_[1] + alpha2_ * pos_sum_all_0_[0];
-        set_mu(mu);
-      }*/
       else {
         for (size_t split = 0; split < data.total_size()-1; split++) {
           T mu = alpha2_inv_ * neg_sum_all_1_[split+1] +
@@ -121,10 +116,6 @@ namespace ProbabilityDistributions {
             base_class::set_mu(mu);
             break;
           }
-          /*else {
-            printf("mu = %f not in [%f, %f]\n", mu, ptr[indexes[split]],
-                ptr[indexes[split+1]]);
-          }*/
         }
       }
     }
