@@ -77,7 +77,7 @@ namespace ProbabilityDistributions {
     if (!fixed_mean_)
       set_mean(sum_1/sum_0);
     if (!fixed_sigma_)
-      set_sigma(sqrt((sum_2 - 2*mean_*sum_1 + mean_*mean_*sum_0)/sum_0));
+      set_sigma(std::sqrt((sum_2 - 2*mean_*sum_1 + mean_*mean_*sum_0)/sum_0));
   }
 
   template <class D, class W, class T>
