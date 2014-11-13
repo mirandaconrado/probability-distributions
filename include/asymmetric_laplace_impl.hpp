@@ -51,11 +51,39 @@ namespace ProbabilityDistributions {
       MA::ConstArray<W> const& weight, std::vector<size_t> const& indexes) {
     percentile_vector_ = Distribution<D,W,T>::build_percentile_vector(weight,
         indexes);
+
+    D const* ptr = data.get_pointer();
+
+    neg_sum_all_0_.resize(data.total_size(), 0);
+    neg_sum_all_1_.resize(data.total_size(), 0);
+    pos_sum_all_0_.resize(data.total_size(), 0);
+    pos_sum_all_1_.resize(data.total_size(), 0);
+
+    T w, s;
+    size_t n_data = data.total_size();
+
+    for (size_t i = 1; i < n_data; i++) {
+      w = weight(indexes[i-1]);
+      s = ptr[indexes[i-1]];
+      neg_sum_all_0_[i] = neg_sum_all_0_[i-1] + w;
+      neg_sum_all_1_[i] = neg_sum_all_1_[i-1] + w * s;
+    }
+
+    for (size_t i = n_data-1; i > 0; i--) {
+      w = weight(indexes[i]);
+      s = ptr[indexes[i]];
+      pos_sum_all_0_[i-1] = pos_sum_all_0_[i] + w;
+      pos_sum_all_1_[i-1] = pos_sum_all_1_[i] + w * s;
+    }
   }
 
   template <class D, class W, class T>
   void AsymmetricLaplace<D,W,T>::end_MLE() {
     percentile_vector_.clear();
+    pos_sum_all_0_.clear();
+    pos_sum_all_1_.clear();
+    neg_sum_all_0_.clear();
+    neg_sum_all_1_.clear();
   }
 
   template <class D, class W, class T>
@@ -74,17 +102,19 @@ namespace ProbabilityDistributions {
             data, weight, indexes, percentile_vector_));
 
     if (!fixed_lambda_) {
-      T sum_0 = 0, sum_1_pos = 0, sum_1_neg = 0;
-      for (size_t j = 0; j < data.total_size(); j++) {
-        T w = weight(j);
-        sum_0 += w;
-        if (ptr[j] < base_class::mu_)
-          sum_1_neg += ptr[j] - base_class::mu_;
-        else
-          sum_1_pos += ptr[j] - base_class::mu_;
-      }
+      T& mu = base_class::mu_;
 
-      set_lambda(sum_0 / (alpha_ * sum_1_pos - alpha_inv_ * sum_1_neg));
+      size_t split;
+      for (split = 0; split < data.total_size()-1; split++)
+        if (mu >= ptr[indexes[split]] && mu <= ptr[indexes[split+1]])
+          break;
+
+      T lambda_inv = alpha_ * (pos_sum_all_1_[split] -
+          mu * pos_sum_all_0_[split]);
+      lambda_inv -= alpha_inv_ * (neg_sum_all_1_[split+1] -
+          mu * neg_sum_all_0_[split+1]);
+
+      set_lambda((neg_sum_all_0_[split+1] + pos_sum_all_0_[split])/lambda_inv);
     }
   }
 };
