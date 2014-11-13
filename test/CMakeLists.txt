@@ -1,5 +1,6 @@
 add_executable(run_tests.bin EXCLUDE_FROM_ALL
   asymmetric_laplace.cpp
+  asymmetric_normal.cpp
   discrete.cpp
   laplace.cpp
   mixture.cpp
