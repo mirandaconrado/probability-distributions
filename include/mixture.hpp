@@ -1,6 +1,7 @@
 #ifndef __PROBABILITY_DISTRIBUTIONS__MIXTURE_HPP__
 #define __PROBABILITY_DISTRIBUTIONS__MIXTURE_HPP__
 
+#include "asymmetric_distribution.hpp"
 #include "discrete.hpp"
 #include "distribution.hpp"
 
@@ -61,6 +62,39 @@ namespace ProbabilityDistributions {
           std::vector<size_t> const& indexes = std::vector<size_t>());
 
     private:
+      template <size_t... S>
+      void fix_all_asymmetries(CompileUtils::sequence<S...>) {
+        asymmetry_status_ = {fix_asymmetry(std::get<S>(components_))...};
+      }
+      template <class Dist>
+      typename std::enable_if<
+        !std::is_base_of<AsymmetricDistribution<Dist,D,W,T>,
+                         Dist>::value, bool>::type
+      fix_asymmetry(Dist& d) { return true; }
+      template <class Dist>
+      bool fix_asymmetry(AsymmetricDistribution<Dist,D,W,T>& d) {
+        bool flag = d.is_p_fixed();
+        d.fix_p(true);
+        return flag;
+      }
+
+      template <size_t... S>
+      void free_all_asymmetries(CompileUtils::sequence<S...>) {
+        bool ret[] = {free_asymmetry(std::get<S>(components_),
+            asymmetry_status_[S])...};
+        (void)ret;
+      }
+      template <class Dist>
+      typename std::enable_if<
+        !std::is_base_of<AsymmetricDistribution<Dist,D,W,T>,
+                         Dist>::value, bool>::type
+      free_asymmetry(Dist& d, bool flag) { return true; }
+      template <class Dist>
+      bool free_asymmetry(AsymmetricDistribution<Dist,D,W,T>& d, bool flag) {
+        d.fix_p(flag);
+        return true;
+      }
+
       void check_data_and_weight(MA::ConstArray<D> const& data,
           MA::ConstArray<W> const& weight) const;
 
@@ -83,6 +117,8 @@ namespace ProbabilityDistributions {
 
       MA::Array<W> transpose(MA::Array<W> const& original) const;
 
+      bool have_asymmetric_;
+      std::vector<bool> asymmetry_status_;
       T stop_condition_;
       size_t max_iterations_;
       Discrete<K,D,W,T> mixture_weights_;

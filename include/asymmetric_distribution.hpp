@@ -13,6 +13,7 @@ namespace ProbabilityDistributions {
 
       void fix_p(bool fixed = true) { fixed_p_ = fixed; }
       void fix_mu(bool fixed = true) { fixed_mu_ = fixed; }
+      bool is_p_fixed() const { return fixed_p_; }
       void set_p(T p);
       void set_mu(T mu) { mu_ = mu; }
       T get_p() const { return p_; }

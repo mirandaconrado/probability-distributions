@@ -113,11 +113,6 @@ TEST(MixtureTest, LikelihoodAsymmetricNormal) {
   auto new_dist = make_mixture(Laplace<double>(-0.1, 1),
       Laplace<double>(0.1, 1));
 
-  dist.get_component<0>().fix_p(true);
-  dist.get_component<1>().fix_p(true);
-  dist.MLE(samples);
-  dist.get_component<0>().fix_p(false);
-  dist.get_component<1>().fix_p(false);
   dist.MLE(samples);
 
   dist_a.MLE(samples);
@@ -156,11 +151,6 @@ TEST(MixtureTest, LikelihoodAsymmetricLaplace) {
   auto new_dist = make_mixture(Normal<double>(-0.1, 1),
       Normal<double>(0.1, 1));
 
-  dist.get_component<0>().fix_p(true);
-  dist.get_component<1>().fix_p(true);
-  dist.MLE(samples);
-  dist.get_component<0>().fix_p(false);
-  dist.get_component<1>().fix_p(false);
   dist.MLE(samples);
 
   dist_a.MLE(samples);

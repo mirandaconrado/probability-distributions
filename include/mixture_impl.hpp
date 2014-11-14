@@ -6,6 +6,10 @@
 namespace ProbabilityDistributions {
   template <unsigned int SS, class D, class W, class T, class... Dists>
   Mixture<SS,D,W,T,Dists...>::Mixture(Dists&&... dists):
+    have_asymmetric_(CompileUtils::or_<
+        std::is_base_of<
+          AsymmetricDistribution<typename CompileUtils::clean_type<Dists>::type,D,W,T>,
+          typename CompileUtils::clean_type<Dists>::type>::value...>::value),
     stop_condition_(1e-4),
     max_iterations_(1000),
     mixture_weights_(),
@@ -165,29 +169,46 @@ namespace ProbabilityDistributions {
       }
 
     MA::Array<W> expected_weight;
-    T ll_old = -INFINITY, ll_new = -INFINITY;
-    size_t it = 0;
 
-    do {
-      build_expectation(expected_weight, weight, data);
+    bool fixed_asymmetries = false;
+    if (have_asymmetric_) {
+      fixed_asymmetries = true;
+      fix_all_asymmetries(
+          typename CompileUtils::tuple_sequence_generator<tuple_type>::type());
+    }
 
-      ll_old = ll_new;
+    while (1) {
+      T ll_old = -INFINITY, ll_new = -INFINITY;
+      size_t it = 0;
 
-      MA::Slice<W> weight_slice(expected_weight, 0);
+      do {
+        build_expectation(expected_weight, weight, data);
 
-      for (unsigned int k = 0; k < K; k++)
-        components_pointers_[k]->MLE(data, weight_slice.get_element(k),
-            *index_pointer);
+        ll_old = ll_new;
 
-      MA::Array<W> expected_weight_transp = transpose(expected_weight);
+        MA::Slice<W> weight_slice(expected_weight, 0);
 
-      mixture_weights_.MLE(expected_weight_transp);
+        for (unsigned int k = 0; k < K; k++)
+          components_pointers_[k]->MLE(data, weight_slice.get_element(k),
+              *index_pointer);
 
-      ll_new = internal_log_likelihood(data, expected_weight);
-      assert(ll_new >= ll_old);
+        MA::Array<W> expected_weight_transp = transpose(expected_weight);
 
-      it++;
-    } while(ll_new - ll_old > stop_condition_ && it < max_iterations_);
+        mixture_weights_.MLE(expected_weight_transp);
+
+        ll_new = internal_log_likelihood(data, expected_weight);
+        assert(ll_new >= ll_old);
+
+        it++;
+      } while(ll_new - ll_old > stop_condition_ && it < max_iterations_);
+
+      if (!fixed_asymmetries)
+        break;
+
+      fixed_asymmetries = false;
+      free_all_asymmetries(
+          typename CompileUtils::tuple_sequence_generator<tuple_type>::type());
+    }
 
     if (index_pointer != &indexes)
       delete index_pointer;
