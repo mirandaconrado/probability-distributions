@@ -101,7 +101,7 @@ namespace ProbabilityDistributions {
       if (isnan(diff))
         return;
 
-      T step = fix_step(p_, (diff > 0) ? 1e-2 : -1e-2);
+      T step = fix_step(p_, (diff > 0) ? 1e-3 : -1e-3);
 
       T best_p = p_, best_mu = mu_;
       std::vector<T> best_parameters =
@@ -109,6 +109,8 @@ namespace ProbabilityDistributions {
       T best_ll = ll;
 
       while (std::abs(step) > tol_) {
+        while (best_p + step <= 1e-4 || best_p + step >= 1-1e-4)
+          step *= 0.9;
         set_p(best_p + step);
         static_cast<Dist*>(this)->MLE_fixed_p(data, weight, indexes);
         T new_ll = log_likelihood(data, weight);
