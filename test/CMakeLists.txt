@@ -3,6 +3,7 @@ add_executable(run_tests.bin EXCLUDE_FROM_ALL
   asymmetric_normal.cpp
   discrete.cpp
   laplace.cpp
+  log_number.cpp
   mixture.cpp
   normal.cpp
 )

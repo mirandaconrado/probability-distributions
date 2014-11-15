@@ -109,9 +109,6 @@ namespace ProbabilityDistributions {
       bool sample_component(MA::Array<D>& sample, size_t component_id,
           RNG& rng) const;
 
-      T internal_log_likelihood(MA::ConstArray<D> const& data,
-          MA::ConstArray<W> const& expected_weight) const;
-
       void build_expectation(MA::Array<W>& expected_weight,
           MA::ConstArray<W> const& weight, MA::ConstArray<D> const& data) const;
 

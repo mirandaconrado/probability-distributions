@@ -3,6 +3,8 @@
 
 #include "mixture.hpp"
 
+#include "log_number.hpp"
+
 namespace ProbabilityDistributions {
   template <unsigned int SS, class D, class W, class T, class... Dists>
   Mixture<SS,D,W,T,Dists...>::Mixture(Dists&&... dists):
@@ -71,26 +73,25 @@ namespace ProbabilityDistributions {
       MA::ConstArray<W> const& weight) const {
     check_data_and_weight(data, weight);
 
-    MA::Array<W> expected_weight;
-    build_expectation(expected_weight, weight, data);
+    MA::ConstSlice<D> data_slice(data, 0);
 
-    return internal_log_likelihood(data, expected_weight);
-  }
-
-  template <unsigned int SS, class D, class W, class T, class... Dists>
-  T Mixture<SS,D,W,T,Dists...>::internal_log_likelihood(
-      MA::ConstArray<D> const& data,
-      MA::ConstArray<W> const& expected_weight) const {
-    MA::ConstSlice<W> weight_slice(expected_weight, 0);
+    MA::Array<W> null_weight({1});
+    null_weight(0) = 1;
+    MA::Size sample_size({1, SS});
 
     T ll = 0;
-    for (unsigned int k = 0; k < K; k++)
-      ll += components_pointers_[k]->log_likelihood(data,
-          weight_slice.get_element(k));
+    for (unsigned int j = 0; j < data_slice.total_left_size(); j++) {
+      MA::ConstArray<D> sample = data_slice.get_element(j);
+      sample.resize(sample_size);
 
-    MA::Array<W> expected_weight_transp = transpose(expected_weight);
+      T local_likelihood = 0;
+      for (unsigned int i = 0; i < K; i++)
+        local_likelihood += mixture_weights_.get_p()[i] *
+          std::exp(components_pointers_[i]->log_likelihood(sample, null_weight));
 
-    ll += mixture_weights_.log_likelihood(expected_weight_transp);
+      ll += weight(j) * std::log(local_likelihood);
+    }
+
     return ll;
   }
 
@@ -110,15 +111,17 @@ namespace ProbabilityDistributions {
       MA::ConstArray<D> sample = data_slice.get_element(j);
       sample.resize(sample_size);
 
-      W sum = 0;
+      LogNumber sum = 0;
+      std::vector<LogNumber> vals(K);
       for (unsigned int i = 0; i < K; i++) {
-        expected_weight(i,j) = mixture_weights_.get_p()[i] *
-          std::exp(components_pointers_[i]->log_likelihood(sample, null_weight));
-        sum += expected_weight(i,j);
+        vals[i].from_log(
+          components_pointers_[i]->log_likelihood(sample, null_weight));
+        vals[i] *= mixture_weights_.get_p()[i];
+        sum += vals[i];
       }
 
       for (unsigned int i = 0; i < K; i++)
-        expected_weight(i,j) *= weight(j) / sum;
+        expected_weight(i,j) = weight(j) * (vals[i] / sum).to_double();
     }
   }
 
@@ -196,8 +199,9 @@ namespace ProbabilityDistributions {
 
         mixture_weights_.MLE(expected_weight_transp);
 
-        ll_new = internal_log_likelihood(data, expected_weight);
-        assert(ll_new >= ll_old);
+        ll_new = log_likelihood(data, weight);
+        //assert(ll_new >= ll_old);
+        assert(ll_new >= ll_old - 1e-8);
 
         it++;
       } while(ll_new - ll_old > stop_condition_ && it < max_iterations_);
