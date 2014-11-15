@@ -45,7 +45,7 @@ TEST(MixtureTest, LikelihoodNormal) {
   double likelihood2_a = dist_a.log_likelihood(samples);
   double new_likelihood = new_dist.log_likelihood(samples);
 
-  EXPECT_DOUBLE_EQ(likelihood2, likelihood2_a);
+  EXPECT_NEAR(likelihood2, likelihood2_a, 1e-8);
   EXPECT_GE(likelihood2, likelihood1);
   EXPECT_GE(likelihood2, new_likelihood);
 }
@@ -73,8 +73,7 @@ TEST(MixtureTest, LikelihoodLaplace) {
   dist_a.get_component<0>().set_mu(-0.1);
   dist_a.get_component<1>().set_mu(0.1);
 
-  auto new_dist = make_mixture(Laplace<double>(-0.1, 1),
-      Laplace<double>(0.1, 1));
+  auto new_dist = make_mixture(Normal<double>(-0.1, 1), Normal<double>(0.1, 1));
 
   dist.MLE(samples);
   dist_a.MLE(samples);
@@ -84,7 +83,7 @@ TEST(MixtureTest, LikelihoodLaplace) {
   double likelihood2_a = dist_a.log_likelihood(samples);
   double new_likelihood = new_dist.log_likelihood(samples);
 
-  EXPECT_DOUBLE_EQ(likelihood2, likelihood2_a);
+  EXPECT_NEAR(likelihood2, likelihood2_a, 1e-8);
   EXPECT_GE(likelihood2, likelihood1);
   EXPECT_GE(likelihood2, new_likelihood);
 }
@@ -148,8 +147,7 @@ TEST(MixtureTest, LikelihoodAsymmetricLaplace) {
   dist_a.get_component<0>().set_mu(-0.1);
   dist_a.get_component<1>().set_mu(0.1);
 
-  auto new_dist = make_mixture(Normal<double>(-0.1, 1),
-      Normal<double>(0.1, 1));
+  auto new_dist = make_mixture(Normal<double>(-0.1, 1), Normal<double>(0.1, 1));
 
   dist.MLE(samples);
 
