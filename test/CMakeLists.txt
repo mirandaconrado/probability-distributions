@@ -2,6 +2,7 @@ add_executable(run_tests.bin EXCLUDE_FROM_ALL
   asymmetric_laplace.cpp
   asymmetric_normal.cpp
   discrete.cpp
+  hmm.cpp
   laplace.cpp
   log_number.cpp
   mixture.cpp
