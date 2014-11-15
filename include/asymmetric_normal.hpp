@@ -18,6 +18,16 @@ namespace ProbabilityDistributions {
       void set_sigma(T sigma) {
         assert(sigma > 0); sigma_ = sigma; sigma2_ = 2*sigma*sigma; }
       T get_sigma() const { return sigma_; }
+      AsymmetricNormal<D,W,T> const&
+        operator=(AsymmetricNormal<D,W,T> const& other) {
+          base_class::set_p(other.get_p());
+          base_class::set_mu(other.get_mu());
+          set_sigma(other.get_sigma());
+          base_class::fixed_p_ = other.fixed_p_;
+          base_class::fixed_mu_ = other.fixed_mu_;
+          fixed_sigma_ = other.fixed_sigma_;
+          return *this;
+        }
 
     private:
       typedef AsymmetricDistribution<AsymmetricNormal<D,W,T>,D,W,T> base_class;

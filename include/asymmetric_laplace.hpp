@@ -17,6 +17,16 @@ namespace ProbabilityDistributions {
       void fix_lambda(bool fixed = true) { fixed_lambda_ = fixed; }
       void set_lambda(T lambda) { assert(lambda > 0); lambda_ = lambda; }
       T get_lambda() const { return lambda_; }
+      AsymmetricLaplace<D,W,T> const&
+        operator=(AsymmetricLaplace<D,W,T> const& other) {
+          base_class::set_p(other.get_p());
+          base_class::set_mu(other.get_mu());
+          set_lambda(other.get_lambda());
+          base_class::fixed_p_ = other.fixed_p_;
+          base_class::fixed_mu_ = other.fixed_mu_;
+          fixed_lambda_ = other.fixed_lambda_;
+          return *this;
+        }
 
     private:
       typedef AsymmetricDistribution<AsymmetricLaplace<D,W,T>,D,W,T> base_class;

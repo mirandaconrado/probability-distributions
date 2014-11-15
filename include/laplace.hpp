@@ -17,6 +17,14 @@ namespace ProbabilityDistributions {
       void set_lambda(T lambda) { assert(lambda > 0); lambda_ = lambda; }
       T get_mu() const { return mu_; }
       T get_lambda() const { return lambda_; }
+      Laplace<D,W,T> const&
+        operator=(Laplace<D,W,T> const& other) {
+          set_mu(other.get_mu());
+          set_lambda(other.get_lambda());
+          fixed_mu_ = other.fixed_mu_;
+          fixed_lambda_ = other.fixed_lambda_;
+          return *this;
+        }
 
       template <class RNG>
       void sample(MA::Array<D>& samples, size_t n_samples, RNG& rng) const;

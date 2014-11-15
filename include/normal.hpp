@@ -18,6 +18,14 @@ namespace ProbabilityDistributions {
         inv_sigma2_ = 1/(2*sigma*sigma); }
       T get_mean() const { return mean_; }
       T get_sigma() const { return sigma_; }
+      Normal<D,W,T> const&
+        operator=(Normal<D,W,T> const& other) {
+          set_mean(other.get_mean());
+          set_sigma(other.get_sigma());
+          fixed_mean_ = other.fixed_mean_;
+          fixed_sigma_ = other.fixed_sigma_;
+          return *this;
+        }
 
       template <class RNG>
       void sample(MA::Array<D>& samples, size_t n_samples, RNG& rng) const;

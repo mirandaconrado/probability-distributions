@@ -17,6 +17,11 @@ namespace ProbabilityDistributions {
       void set_p(std::vector<T> const& p) { assert(p.size() == K); p_ = p; normalize(); }
       std::vector<T> const& get_p() const { return p_; }
       unsigned int get_number_of_classes() const { return K; }
+      Discrete<K,D,W,T> const&
+        operator=(Discrete<K,D,W,T> const& other) {
+          set_p(other.get_p());
+          return *this;
+        }
 
       template <class RNG>
       void sample(MA::Array<D>& samples, size_t n_samples, RNG& rng) const;
