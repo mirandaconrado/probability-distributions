@@ -14,6 +14,8 @@ namespace ProbabilityDistributions {
       Discrete();
       explicit Discrete(std::vector<T> const& p);
 
+      void anneal(T temp = 1);
+
       void set_p(std::vector<T> const& p) { assert(p.size() == K); p_ = p; normalize(); }
       std::vector<T> const& get_p() const { return p_; }
       unsigned int get_number_of_classes() const { return K; }

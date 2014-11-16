@@ -156,6 +156,13 @@ namespace ProbabilityDistributions {
     for (unsigned int i = 0; i < K; i++)
       p_[i] /= sum;
   }
+
+  template <unsigned int K, class D, class W, class T>
+  void Discrete<K,D,W,T>::anneal(T temp) {
+    for (unsigned int i = 0; i < K; i++)
+      p_[i] = std::exp(std::log(p_[i])/temp);
+    normalize();
+  }
 };
 
 #endif
