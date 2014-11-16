@@ -11,10 +11,10 @@
 
 namespace ProbabilityDistributions {
   template <class D, class W, class T>
-  Normal<D,W,T>::Normal(T mean, T sigma):
-    fixed_mean_(false),
+  Normal<D,W,T>::Normal(T mu, T sigma):
+    fixed_mu_(false),
     fixed_sigma_(false) {
-      set_mean(mean);
+      set_mu(mu);
       set_sigma(sigma);
     }
 
@@ -27,7 +27,7 @@ namespace ProbabilityDistributions {
     size[1] = 1;
     samples.resize(size);
 
-    boost::random::normal_distribution<T> dist(mean_, sigma_);
+    boost::random::normal_distribution<T> dist(mu_, sigma_);
 
     D* ptr = samples.get_pointer();
 
@@ -48,7 +48,7 @@ namespace ProbabilityDistributions {
     for (size_t j = 0; j < data.total_size(); j++) {
       T w = weight(j);
       T s = ptr[j];
-      T local_likelihood = s - mean_;
+      T local_likelihood = s - mu_;
       local_likelihood *= local_likelihood;
       local_likelihood *= inv_sigma2_;
       local_likelihood += sigma_likelihood;
@@ -74,10 +74,10 @@ namespace ProbabilityDistributions {
       sum_2 += w*s*s;
     }
 
-    if (!fixed_mean_)
-      set_mean(sum_1/sum_0);
+    if (!fixed_mu_)
+      set_mu(sum_1/sum_0);
     if (!fixed_sigma_)
-      set_sigma(std::sqrt((sum_2 - 2*mean_*sum_1 + mean_*mean_*sum_0)/sum_0));
+      set_sigma(std::sqrt((sum_2 - 2*mu_*sum_1 + mu_*mu_*sum_0)/sum_0));
   }
 
   template <class D, class W, class T>

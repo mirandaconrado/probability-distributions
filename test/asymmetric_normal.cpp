@@ -62,7 +62,7 @@ TEST(AsymmetricNormalTest, LikelihoodConsistency) {
 
   EXPECT_DOUBLE_EQ(likelihood22, likelihood21);
 
-  EXPECT_NEAR(dist1.get_mu(), dist2.get_mean(), 1e-8);
+  EXPECT_NEAR(dist1.get_mu(), dist2.get_mu(), 1e-8);
   EXPECT_DOUBLE_EQ(dist1.get_sigma(), dist2.get_sigma());
 }
 

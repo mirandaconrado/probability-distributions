@@ -33,15 +33,15 @@ TEST(NormalTest, MLE) {
   dist.sample(samples, n_samples, rng);
   dist.MLE(samples);
 
-  double mu = dist.get_mean(), sigma = dist.get_sigma();
+  double mu = dist.get_mu(), sigma = dist.get_sigma();
   double eps = 1e-2;
   double ll = dist.log_likelihood(samples);
 
-  dist.set_mean(mu + eps);
+  dist.set_mu(mu + eps);
   EXPECT_GE(ll, dist.log_likelihood(samples));
-  dist.set_mean(mu - eps);
+  dist.set_mu(mu - eps);
   EXPECT_GE(ll, dist.log_likelihood(samples));
-  dist.set_mean(mu);
+  dist.set_mu(mu);
 
   dist.set_sigma(sigma + eps);
   EXPECT_GE(ll, dist.log_likelihood(samples));

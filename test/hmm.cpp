@@ -29,8 +29,8 @@ TEST(HMMTest, LikelihoodNormal) {
   double likelihood1_a = dist_a.log_likelihood(samples);
   EXPECT_DOUBLE_EQ(likelihood1, likelihood1_a);
 
-  dist.get_component<0>().set_mean(-0.1);
-  dist.get_component<1>().set_mean(0.1);
+  dist.get_component<0>().set_mu(-0.1);
+  dist.get_component<1>().set_mu(0.1);
   dist_a.get_component<0>().set_mu(-0.1);
   dist_a.get_component<1>().set_mu(0.1);
 
