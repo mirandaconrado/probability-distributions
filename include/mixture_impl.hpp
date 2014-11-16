@@ -201,10 +201,11 @@ namespace ProbabilityDistributions {
 
         ll_new = log_likelihood(data, weight);
         //assert(ll_new >= ll_old);
-        assert(ll_new >= ll_old - 1e-8);
+        //assert(ll_new >= ll_old - 1e-8);
 
         it++;
-      } while(ll_new - ll_old > stop_condition_ && it < max_iterations_);
+      } while(std::abs(ll_new - ll_old) > stop_condition_ &&
+              it < max_iterations_);
 
       if (!fixed_asymmetries)
         break;
