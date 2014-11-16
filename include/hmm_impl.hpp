@@ -220,6 +220,9 @@ namespace ProbabilityDistributions {
       MA::ConstArray<W> const& weight, std::vector<size_t> const& indexes,
       CompileUtils::sequence<S...>) {
     auto mix = make_mixture(std::get<S>(components_)...);
+    mix.set_max_iterations(max_iterations_);
+    mix.set_stop_condition(stop_condition_);
+
     auto t1 = std::make_tuple(
         mix.template get_component<S>() = std::get<S>(components_)...);
     (void)t1;
@@ -228,15 +231,16 @@ namespace ProbabilityDistributions {
         std::get<S>(components_) = mix.template get_component<S>()...);
     (void)t2;
 
-    initial_weights_ = mix.get_mixture_weights();
-    for (unsigned int i = 0; i < K; i++)
-      transition_weights_[i] = initial_weights_;
+    // In tests have shown that copying the weights can get to lower local
+    // minima.
+    //initial_weights_ = mix.get_mixture_weights();
+    //for (unsigned int i = 0; i < K; i++)
+    //  transition_weights_[i] = initial_weights_;
   }
 
   template <unsigned int SS, class D, class W, class T, class... Dists>
   void HMM<SS,D,W,T,Dists...>::MLE(MA::ConstArray<D> const& data,
       MA::ConstArray<W> const& weight, std::vector<size_t> const& indexes) {
-//    printf("---------------\nstarting MLE\n---------------\n");
     check_data_and_weight(data, weight);
 
     size_t n_samples = data.size()[0];
@@ -311,10 +315,11 @@ namespace ProbabilityDistributions {
 
         ll_new = log_likelihood(data, weight);
         //assert(ll_new >= ll_old);
-        assert(ll_new >= ll_old - 1e-8);
+        //assert(ll_new >= ll_old - 1e-8);
 
         it++;
-      } while(ll_new - ll_old > stop_condition_ && it < max_iterations_);
+      } while(std::abs(ll_new - ll_old) > stop_condition_ &&
+              it < max_iterations_);
 
       if (!fixed_asymmetries)
         break;
