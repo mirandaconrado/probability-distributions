@@ -85,9 +85,14 @@ namespace ProbabilityDistributions {
       sample.resize(sample_size);
 
       T local_likelihood = 0;
-      for (unsigned int i = 0; i < K; i++)
+      for (unsigned int i = 0; i < K; i++) {
         local_likelihood += mixture_weights_.get_p()[i] *
           std::exp(components_pointers_[i]->log_likelihood(sample, null_weight));
+        if (isnan(local_likelihood)) {
+          printf("Got a NAN!\n");
+          exit(1);
+        }
+      }
 
       ll += weight(j) * std::log(local_likelihood);
     }
@@ -200,8 +205,6 @@ namespace ProbabilityDistributions {
         mixture_weights_.MLE(expected_weight_transp);
 
         ll_new = log_likelihood(data, weight);
-        //assert(ll_new >= ll_old);
-        //assert(ll_new >= ll_old - 1e-8);
 
         it++;
       } while(std::abs(ll_new - ll_old) > stop_condition_ &&
