@@ -95,45 +95,91 @@ namespace ProbabilityDistributions {
     if (fixed_p_)
       static_cast<Dist*>(this)->MLE_fixed_p(data, weight, indexes);
     else {
-      T ll = log_likelihood(data, weight);
-      T diff = compute_p_derivative(p_, ll, data, weight, indexes);
+      T step  = 1e-4;
 
-      if (isnan(diff))
-        return;
+      T center_p = p_, left_p = center_p - step, right_p = center_p + step;
 
-      T step = fix_step(p_, (diff > 0) ? 1e-3 : -1e-3);
+      set_p(center_p);
+      static_cast<Dist*>(this)->MLE_fixed_p(data, weight, indexes);
+      T center_ll = log_likelihood(data, weight), left_ll, right_ll;
 
-      T best_p = p_, best_mu = mu_;
-      std::vector<T> best_parameters =
-        static_cast<Dist*>(this)->get_parameter_vector();
-      T best_ll = ll;
-
-      while (std::abs(step) > tol_) {
-        while (best_p + step <= 1e-4 || best_p + step >= 1-1e-4)
-          step *= 0.9;
-        set_p(best_p + step);
+      if (left_p > 0) {
+        set_p(left_p);
         static_cast<Dist*>(this)->MLE_fixed_p(data, weight, indexes);
-        T new_ll = log_likelihood(data, weight);
+        left_ll = log_likelihood(data, weight);
+      }
+      else
+        left_ll = -INFINITY;
 
-        if (new_ll >= best_ll) {
-          best_p = p_;
-          best_mu = mu_;
-          best_parameters = static_cast<Dist*>(this)->get_parameter_vector();
-          best_ll = new_ll;
+      if (right_p < 1) {
+        set_p(right_p);
+        static_cast<Dist*>(this)->MLE_fixed_p(data, weight, indexes);
+        right_ll = log_likelihood(data, weight);
+      }
+        right_ll = -INFINITY;
 
-          diff = compute_p_derivative(best_p, best_ll, data, weight, indexes);
-          if (isnan(diff))
-            return;
-          step = fix_step(p_,
-              ((diff > 0) ? std::abs(step) : -std::abs(step)) * 1.1);
+      while (1) {
+        if (center_ll > left_ll && center_ll > right_ll) {
+          if (step < tol_) {
+            set_p(center_p);
+            break;
+          }
+
+          step *= 1e-1;
+          left_p = center_p - step;
+          right_p = center_p + step;
+
+          if (left_p > 0) {
+            set_p(left_p);
+            static_cast<Dist*>(this)->MLE_fixed_p(data, weight, indexes);
+            left_ll = log_likelihood(data, weight);
+          }
+          else
+            left_ll = -INFINITY;
+
+          if (right_p < 1) {
+            set_p(right_p);
+            static_cast<Dist*>(this)->MLE_fixed_p(data, weight, indexes);
+            right_ll = log_likelihood(data, weight);
+          }
+          else
+            right_ll = -INFINITY;
         }
-        else
-          step *= 0.5;
+        else if (left_ll > right_ll) {
+          right_p = center_p;
+          center_p = left_p;
+          right_ll = center_ll;
+          center_ll = left_ll;
+
+          left_p = center_p - step;
+
+          if (left_p > 0) {
+            set_p(left_p);
+            static_cast<Dist*>(this)->MLE_fixed_p(data, weight, indexes);
+            left_ll = log_likelihood(data, weight);
+          }
+          else
+            left_ll = -INFINITY;
+        }
+        else {
+          left_p = center_p;
+          center_p = right_p;
+          left_ll = center_ll;
+          center_ll = right_ll;
+
+          right_p = center_p + step;
+
+          if (right_p < 1) {
+            set_p(right_p);
+            static_cast<Dist*>(this)->MLE_fixed_p(data, weight, indexes);
+            right_ll = log_likelihood(data, weight);
+          }
+          else
+            right_ll = -INFINITY;
+        }
       }
 
-      set_p(best_p);
-      set_mu(best_mu);
-      static_cast<Dist*>(this)->set_parameter_vector(best_parameters);
+      static_cast<Dist*>(this)->MLE_fixed_p(data, weight, indexes);
     }
 
     static_cast<Dist*>(this)->end_MLE();
@@ -144,36 +190,6 @@ namespace ProbabilityDistributions {
     while (p_ + step <= 0 || p_ + step >= 1)
       step *= 0.99;
     return step;
-  }
-
-  template <class Dist, class D, class W, class T>
-  T AsymmetricDistribution<Dist,D,W,T>::compute_p_derivative(T p, T ll,
-      MA::ConstArray<D> const& data, MA::ConstArray<W> const& weight,
-      std::vector<size_t> const& indexes) {
-    T ll_pos, ll_neg;
-    if (p_ + eps_ <= 1 && p_ - eps_ >= 0) {
-      set_p(p_ + eps_);
-      static_cast<Dist*>(this)->MLE_fixed_p(data, weight, indexes);
-      ll_pos = log_likelihood(data, weight);
-      set_p(p_ - eps_);
-      static_cast<Dist*>(this)->MLE_fixed_p(data, weight, indexes);
-      ll_neg = log_likelihood(data, weight);
-      return (ll_pos - ll_neg) / (2*eps_);
-    }
-    else if (p_ + eps_ <= 1) {
-      set_p(p_ + eps_);
-      static_cast<Dist*>(this)->MLE_fixed_p(data, weight, indexes);
-      ll_pos = log_likelihood(data, weight);
-      return (ll_pos - ll) / eps_;
-    }
-    else if (p_ - eps_ >= 0) {
-      set_p(p_ - eps_);
-      static_cast<Dist*>(this)->MLE_fixed_p(data, weight, indexes);
-      ll_neg = log_likelihood(data, weight);
-      return (ll - ll_neg) / eps_;
-    }
-    else
-      return NAN;
   }
 
   template <class Dist, class D, class W, class T>
