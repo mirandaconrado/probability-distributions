@@ -65,7 +65,6 @@ namespace ProbabilityDistributions {
 
       bool fixed_lambda_;
       T lambda_, alpha_, alpha_inv_;
-      std::vector<T> percentile_vector_;
       std::vector<T> pos_sum_all_0_, pos_sum_all_1_;
       std::vector<T> neg_sum_all_0_, neg_sum_all_1_;
   };

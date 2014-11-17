@@ -49,9 +49,6 @@ namespace ProbabilityDistributions {
   template <class D, class W, class T>
   void AsymmetricLaplace<D,W,T>::init_MLE(MA::ConstArray<D> const& data,
       MA::ConstArray<W> const& weight, std::vector<size_t> const& indexes) {
-    percentile_vector_ = Distribution<D,W,T>::build_percentile_vector(weight,
-        indexes);
-
     D const* ptr = data.get_pointer();
 
     neg_sum_all_0_.resize(data.total_size(), 0);
@@ -79,7 +76,6 @@ namespace ProbabilityDistributions {
 
   template <class D, class W, class T>
   void AsymmetricLaplace<D,W,T>::end_MLE() {
-    percentile_vector_.clear();
     pos_sum_all_0_.clear();
     pos_sum_all_1_.clear();
     neg_sum_all_0_.clear();
@@ -97,9 +93,38 @@ namespace ProbabilityDistributions {
       MA::ConstArray<W> const& weight, std::vector<size_t> const& indexes) {
     D const* ptr = data.get_pointer();
 
-    if (!base_class::fixed_mu_)
-      base_class::set_mu(Distribution<D,W,T>::get_percentile(base_class::p_,
-            data, weight, indexes, percentile_vector_));
+    if (!base_class::fixed_mu_) {
+      if (data.total_size() == 1) {
+        base_class::set_mu(ptr[0]);
+      }
+      else {
+        if (pos_sum_all_0_[0]*alpha_ < neg_sum_all_0_[1]*alpha_inv_) {
+          base_class::set_mu(ptr[indexes[0]]);
+        }
+        else if (pos_sum_all_0_[data.total_size()-2]*alpha_ >
+            neg_sum_all_0_[data.total_size()-1]*alpha_inv_) {
+          base_class::set_mu(ptr[indexes[data.total_size()-1]]);
+        }
+        else {
+          size_t split;
+          for (split = 1; split < data.total_size(); split++) {
+            W sum_weight = pos_sum_all_0_[split-1]*alpha_ +
+              neg_sum_all_0_[split]*alpha_inv_;
+
+            W SN = sum_weight;
+            W Sn = neg_sum_all_0_[split]*alpha_inv_;
+            W p1 = (Sn - weight(indexes[split-1])*alpha_inv_/2)/SN;
+            W p2 = (Sn + weight(indexes[split])*alpha_/2)/SN;
+            if (p1 <= 0.5 && p2 >= 0.5) {
+              D v1 = ptr[indexes[split-1]], v2 = ptr[indexes[split]];
+              base_class::set_mu(v1 + (v2-v1)*(0.5-p1)/(p2-p1));
+              break;
+            }
+          }
+          assert(split < data.total_size());
+        }
+      }
+    }
 
     if (!fixed_lambda_) {
       T& mu = base_class::mu_;
