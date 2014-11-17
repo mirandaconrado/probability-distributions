@@ -2,6 +2,7 @@
 #define __PROBABILITY_DISTRIBUTIONS__ASYMMETRIC_NORMAL_HPP__
 
 #include "asymmetric_distribution.hpp"
+#include "normal.hpp"
 
 #include <boost/random/normal_distribution.hpp>
 
@@ -15,17 +16,29 @@ namespace ProbabilityDistributions {
       static constexpr unsigned int sample_size = 1;
 
       void fix_sigma(bool fixed = true) { fixed_sigma_ = fixed; }
+      bool is_sigma_fixed() const { return fixed_sigma_; }
       void set_sigma(T sigma) {
         assert(sigma > 0); sigma_ = sigma; sigma2_ = 2*sigma*sigma; }
       T get_sigma() const { return sigma_; }
+
       AsymmetricNormal<D,W,T> const&
         operator=(AsymmetricNormal<D,W,T> const& other) {
           base_class::set_p(other.get_p());
           base_class::set_mu(other.get_mu());
           set_sigma(other.get_sigma());
-          base_class::fixed_p_ = other.fixed_p_;
-          base_class::fixed_mu_ = other.fixed_mu_;
-          fixed_sigma_ = other.fixed_sigma_;
+          base_class::fixed_p_ = other.is_p_fixed();
+          base_class::fixed_mu_ = other.is_mu_fixed();
+          fixed_sigma_ = other.is_sigma_fixed();
+          return *this;
+        }
+      AsymmetricNormal<D,W,T> const&
+        operator=(Normal<D,W,T> const& other) {
+          base_class::set_p(0.5);
+          base_class::set_mu(other.get_mu());
+          set_sigma(other.get_sigma());
+          base_class::fixed_p_ = true;
+          base_class::fixed_mu_ = other.is_mu_fixed();
+          fixed_sigma_ = other.is_sigma_fixed();
           return *this;
         }
 

@@ -2,6 +2,7 @@
 #define __PROBABILITY_DISTRIBUTIONS__ASYMMETRIC_LAPLACE_HPP__
 
 #include "asymmetric_distribution.hpp"
+#include "laplace.hpp"
 
 #include <boost/random/exponential_distribution.hpp>
 
@@ -15,16 +16,28 @@ namespace ProbabilityDistributions {
       static constexpr unsigned int sample_size = 1;
 
       void fix_lambda(bool fixed = true) { fixed_lambda_ = fixed; }
+      bool is_lambda_fixed() const { return fixed_lambda_; }
       void set_lambda(T lambda) { assert(lambda > 0); lambda_ = lambda; }
       T get_lambda() const { return lambda_; }
+
       AsymmetricLaplace<D,W,T> const&
         operator=(AsymmetricLaplace<D,W,T> const& other) {
           base_class::set_p(other.get_p());
           base_class::set_mu(other.get_mu());
           set_lambda(other.get_lambda());
-          base_class::fixed_p_ = other.fixed_p_;
-          base_class::fixed_mu_ = other.fixed_mu_;
-          fixed_lambda_ = other.fixed_lambda_;
+          base_class::fixed_p_ = other.is_p_fixed();
+          base_class::fixed_mu_ = other.is_mu_fixed();
+          fixed_lambda_ = other.is_lambda_fixed();
+          return *this;
+        }
+      AsymmetricLaplace<D,W,T> const&
+        operator=(Laplace<D,W,T> const& other) {
+          base_class::set_p(0.5);
+          base_class::set_mu(other.get_mu());
+          set_lambda(other.get_lambda());
+          base_class::fixed_p_ = true;
+          base_class::fixed_mu_ = other.is_mu_fixed();
+          fixed_lambda_ = other.is_lambda_fixed();
           return *this;
         }
 

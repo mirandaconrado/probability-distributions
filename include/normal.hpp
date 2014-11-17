@@ -11,8 +11,12 @@ namespace ProbabilityDistributions {
 
       static constexpr unsigned int sample_size = 1;
 
+      double get_p() const { return 0.5; }
+
       void fix_mu(bool fixed = true) { fixed_mu_ = fixed; }
       void fix_sigma(bool fixed = true) { fixed_sigma_ = fixed; }
+      bool is_mu_fixed() const { return fixed_mu_; }
+      bool is_sigma_fixed() const { return fixed_sigma_; }
       void set_mu(T mu) { mu_ = mu; }
       void set_sigma(T sigma) { assert(sigma > 0); sigma_ = sigma;
         inv_sigma2_ = 1/(2*sigma*sigma); }

@@ -13,6 +13,8 @@ namespace ProbabilityDistributions {
 
       void fix_mu(bool fixed = true) { fixed_mu_ = fixed; }
       void fix_lambda(bool fixed = true) { fixed_lambda_ = fixed; }
+      bool is_mu_fixed() const { return fixed_mu_; }
+      bool is_lambda_fixed() const { return fixed_lambda_; }
       void set_mu(T mu) { mu_ = mu; }
       void set_lambda(T lambda) { assert(lambda > 0); lambda_ = lambda; }
       T get_mu() const { return mu_; }
