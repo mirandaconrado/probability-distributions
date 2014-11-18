@@ -95,7 +95,7 @@ namespace ProbabilityDistributions {
     if (fixed_p_)
       static_cast<Dist*>(this)->MLE_fixed_p(data, weight, indexes);
     else {
-      T step  = 1e-4;
+      T step  = eps_;
 
       T center_p = p_, left_p = center_p - step, right_p = center_p + step;
 
@@ -119,6 +119,11 @@ namespace ProbabilityDistributions {
         right_ll = -INFINITY;
 
       while (1) {
+        if (std::abs(center_ll - left_ll)  < tol_ &&
+            std::abs(right_ll  - left_ll)  < tol_ &&
+            std::abs(center_ll - right_ll) < tol_)
+          break;
+
         if (center_ll > left_ll && center_ll > right_ll) {
           if (step < tol_) {
             set_p(center_p);
