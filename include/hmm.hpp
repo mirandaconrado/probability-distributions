@@ -5,6 +5,7 @@
 #include "discrete.hpp"
 #include "distribution.hpp"
 #include "log_number.hpp"
+#include "mixture.hpp"
 
 #include "binary_combination.hpp"
 #include "clean_tuple.hpp"
@@ -32,6 +33,7 @@ namespace ProbabilityDistributions {
 
       void set_max_iterations(size_t it) { max_iterations_ = it; }
       size_t get_max_iterations() const { return max_iterations_; }
+      void allow_mixture_MLE(bool flag) { allow_mixture_MLE_ = flag; }
 
       Discrete<K,D,W,T>& get_initial_weights() { return initial_weights_; }
       Discrete<K,D,W,T> const& get_initial_weights() const {
@@ -65,7 +67,29 @@ namespace ProbabilityDistributions {
       void MLE(MA::ConstArray<D> const& data, MA::ConstArray<W> const& weight,
           std::vector<size_t> const& indexes = std::vector<size_t>());
 
+      Mixture<SS,D,W,T,Dists...> make_preditive_distribution(
+          MA::ConstArray<D> const& data, MA::ConstArray<W> const& weight);
+
+      void build_prob_emissons(MA::Array<LogNumber>& prob_emissions,
+          MA::ConstArray<D> const& data) const;
+      void build_alpha_beta(MA::Array<LogNumber>& alpha,
+          MA::Array<LogNumber>& beta,
+          MA::ConstArray<LogNumber> const& prob_emissions,
+          MA::ConstArray<W> const& weight, MA::ConstArray<D> const& data) const;
+      void build_gamma(MA::Array<W>& gamma,
+          MA::ConstArray<LogNumber> const& alpha,
+          MA::ConstArray<LogNumber> const& beta) const;
+      void build_xi(MA::Array<W>& xi, MA::ConstArray<LogNumber> const& alpha,
+          MA::ConstArray<LogNumber> const& beta,
+          MA::ConstArray<LogNumber> const& prob_emissions,
+          MA::ConstArray<W> const& weight) const;
+
     private:
+      template <size_t... S>
+      Mixture<SS,D,W,T,Dists...> make_preditive_distribution(
+          MA::ConstArray<D> const& data, MA::ConstArray<W> const& weight,
+          CompileUtils::sequence<S...>);
+
       template <size_t... S>
       void MLE_as_mixture(MA::ConstArray<D> const& data, MA::ConstArray<W>
           const& weight, std::vector<size_t> const& indexes,
@@ -121,23 +145,11 @@ namespace ProbabilityDistributions {
       void build_expectation(MA::Array<W>& expected_weight,
           MA::ConstArray<W> const& weight, MA::ConstArray<T> const& gamma) const;
 
-      void build_prob_emissons(MA::Array<LogNumber>& prob_emissions,
-          MA::ConstArray<D> const& data) const;
-      void build_alpha_beta(MA::Array<LogNumber>& alpha,
-          MA::Array<LogNumber>& beta,
-          MA::ConstArray<LogNumber> const& prob_emissions,
-          MA::ConstArray<W> const& weight, MA::ConstArray<D> const& data) const;
-      void build_gamma(MA::Array<W>& gamma,
-          MA::ConstArray<LogNumber> const& alpha,
-          MA::ConstArray<LogNumber> const& beta) const;
-      void build_xi(MA::Array<W>& xi, MA::ConstArray<LogNumber> const& alpha,
-          MA::ConstArray<LogNumber> const& beta,
-          MA::ConstArray<LogNumber> const& prob_emissions,
-          MA::ConstArray<W> const& weight) const;
       LogNumber get_adjusted_weight(unsigned int component, unsigned int sample,
           MA::ConstArray<W> const& weight,
           MA::ConstArray<LogNumber> const& prob_emissions) const;
 
+      bool allow_mixture_MLE_;
       bool have_asymmetric_;
       std::vector<bool> asymmetry_status_;
       T stop_condition_;

@@ -3,17 +3,16 @@
 
 #include "hmm.hpp"
 
-#include "mixture.hpp"
-
 namespace ProbabilityDistributions {
   template <unsigned int SS, class D, class W, class T, class... Dists>
   HMM<SS,D,W,T,Dists...>::HMM(Dists&&... dists):
+    allow_mixture_MLE_(true),
     have_asymmetric_(CompileUtils::or_<
         std::is_base_of<
           AsymmetricDistribution<typename CompileUtils::clean_type<Dists>::type,D,W,T>,
           typename CompileUtils::clean_type<Dists>::type>::value...>::value),
     stop_condition_(1e-4),
-    max_iterations_(1000),
+    max_iterations_(1e6),
     components_(tuple_type(dists...)) {
       create_component_pointers(
           typename CompileUtils::tuple_sequence_generator<tuple_type>::type());
@@ -220,8 +219,7 @@ namespace ProbabilityDistributions {
       MA::ConstArray<W> const& weight, std::vector<size_t> const& indexes,
       CompileUtils::sequence<S...>) {
     auto mix = make_mixture(std::get<S>(components_)...);
-    mix.set_max_iterations(max_iterations_);
-    mix.set_stop_condition(stop_condition_);
+    mix.set_max_iterations(100);
 
     auto t1 = std::make_tuple(
         mix.template get_component<S>() = std::get<S>(components_)...);
@@ -233,9 +231,44 @@ namespace ProbabilityDistributions {
 
     // In tests have shown that copying the weights can get to lower local
     // minima.
-    //initial_weights_ = mix.get_mixture_weights();
-    //for (unsigned int i = 0; i < K; i++)
-    //  transition_weights_[i] = initial_weights_;
+    initial_weights_ = mix.get_mixture_weights();
+    for (unsigned int i = 0; i < K; i++)
+      transition_weights_[i] = initial_weights_;
+
+    size_t n_samples = data.size()[0];
+
+    MA::Array<LogNumber> prob_emissions;
+    build_prob_emissons(prob_emissions, data);
+
+    MA::Array<LogNumber> alpha, beta;
+    build_alpha_beta(alpha, beta, prob_emissions, weight, data);
+
+    MA::Array<W> gamma;
+    build_gamma(gamma, alpha, beta);
+
+    MA::Array<W> xi;
+    build_xi(xi, alpha, beta, prob_emissions, weight);
+
+    std::vector<T> initial_weights(K);
+
+    for (unsigned int i = 0; i < K; i++) {
+      initial_weights[i] = gamma(i, 0);
+
+      T den = 0;
+      std::vector<T> num(K, 0);
+      for (unsigned int t = 0; t < n_samples-1; t++) {
+        den += gamma(i, t);
+        for (unsigned int j = 0; j < K; j++)
+          num[j] += xi(i, j, t);
+      }
+
+      std::vector<T> transition_weights(K);
+      for (unsigned int j = 0; j < K; j++)
+        transition_weights[j] = num[j]/den;
+      transition_weights_[i].set_p(transition_weights);
+    }
+
+    initial_weights_.set_p(initial_weights);
   }
 
   template <unsigned int SS, class D, class W, class T, class... Dists>
@@ -254,8 +287,9 @@ namespace ProbabilityDistributions {
         break;
       }
 
-    MLE_as_mixture(data, weight, *index_pointer,
-      typename CompileUtils::tuple_sequence_generator<tuple_type>::type());
+    if (allow_mixture_MLE_)
+      MLE_as_mixture(data, weight, *index_pointer,
+          typename CompileUtils::tuple_sequence_generator<tuple_type>::type());
 
     MA::Array<W> expected_weight;
 
@@ -314,8 +348,6 @@ namespace ProbabilityDistributions {
         initial_weights_.set_p(initial_weights);
 
         ll_new = log_likelihood(data, weight);
-        //assert(ll_new >= ll_old);
-        //assert(ll_new >= ll_old - 1e-8);
 
         it++;
       } while(std::abs(ll_new - ll_old) > stop_condition_ &&
@@ -331,6 +363,50 @@ namespace ProbabilityDistributions {
 
     if (index_pointer != &indexes)
       delete index_pointer;
+  }
+
+  template <unsigned int SS, class D, class W, class T, class... Dists>
+  Mixture<SS,D,W,T,Dists...>
+  HMM<SS,D,W,T,Dists...>::make_preditive_distribution(
+      MA::ConstArray<D> const& data, MA::ConstArray<W> const& weight) {
+    return make_preditive_distribution(data, weight,
+        typename CompileUtils::tuple_sequence_generator<tuple_type>::type());
+  }
+
+  template <unsigned int SS, class D, class W, class T, class... Dists>
+  template <size_t... S>
+  Mixture<SS,D,W,T,Dists...>
+  HMM<SS,D,W,T,Dists...>::make_preditive_distribution(
+      MA::ConstArray<D> const& data, MA::ConstArray<W> const& weight,
+      CompileUtils::sequence<S...>) {
+    Mixture<SS,D,W,T,Dists...> mix = Mixture<SS,D,W,T,Dists...>(
+        std::get<S>(components_)...);
+    mix.set_max_iterations(max_iterations_);
+    mix.set_stop_condition(stop_condition_);
+
+    auto t1 = std::make_tuple(
+        mix.template get_component<S>() = std::get<S>(components_)...);
+    (void)t1;
+
+    MA::Array<LogNumber> prob_emissions;
+    build_prob_emissons(prob_emissions, data);
+
+    MA::Array<LogNumber> alpha, beta;
+    build_alpha_beta(alpha, beta, prob_emissions, weight, data);
+
+    MA::Array<W> gamma;
+    build_gamma(gamma, alpha, beta);
+
+    unsigned int n_samples = data.size()[0];
+
+    std::vector<T> p(K, 0);
+    for (unsigned int i = 0; i < K; i++)
+      for (unsigned int j = 0; j < K; j++)
+        p[i] += get_transition_weights(j).get_p()[i] * gamma(j, n_samples-1);
+
+    mix.get_mixture_weights().set_p(p);
+
+    return mix;
   }
 
   template <unsigned int SS, class D, class W, class T, class... Dists>
