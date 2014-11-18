@@ -76,6 +76,7 @@ TEST(AsymmetricLaplaceTest, MLE) {
   dist.MLE(samples, indexes);
 
   double p = dist.get_p(), mu = dist.get_mu(), lambda = dist.get_lambda();
+  // eps has to be higher because there's a continuum of minima
   double eps = 1e-2;
   double ll = dist.log_likelihood(samples);
 

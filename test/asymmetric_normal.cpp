@@ -76,7 +76,7 @@ TEST(AsymmetricNormalTest, MLE) {
   dist.MLE(samples, indexes);
 
   double p = dist.get_p(), mu = dist.get_mu(), sigma = dist.get_sigma();
-  double eps = 1e-2;
+  double eps = 1e-4;
   double ll = dist.log_likelihood(samples);
 
   dist.set_p(p + eps);
